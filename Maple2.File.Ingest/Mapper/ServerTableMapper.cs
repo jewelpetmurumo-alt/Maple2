@@ -5,6 +5,7 @@ using Maple2.File.Ingest.Utils;
 using Maple2.File.IO;
 using Maple2.File.Parser;
 using Maple2.File.Parser.Enum;
+using Maple2.File.Parser.Xml.Table;
 using Maple2.File.Parser.Xml.Table.Server;
 using Maple2.Model;
 using Maple2.Model.Common;
@@ -127,6 +128,10 @@ public class ServerTableMapper : TypeMapper<ServerTableMetadata> {
         yield return new ServerTableMetadata {
             Name = ServerTableNames.UNLIMITED_ENCHANT_OPTION,
             Table = ParseUnlimitedEnchantOption(),
+        };
+        yield return new ServerTableMetadata {
+            Name = ServerTableNames.CONSTANTS,
+            Table = ParseConstants(),
         };
 
     }
@@ -2106,5 +2111,13 @@ public class ServerTableMapper : TypeMapper<ServerTableMetadata> {
                 rates.Add(attribute, rate);
             }
         }
+    }
+
+    private ConstantsTable ParseConstants() {
+        var results = new Dictionary<string, Model.Metadata.Constants>();
+        foreach ((string key, Parser.Xml.Table.Constants.Key constants) in parser.ParseConstants()) {
+            results.Add(key, new Model.Metadata.Constants(constants.key, constants.value));
+        }
+        return new ConstantsTable(results);
     }
 }
