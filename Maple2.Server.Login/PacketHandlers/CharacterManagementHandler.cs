@@ -45,6 +45,7 @@ public class CharacterManagementHandler : PacketHandler<LoginSession> {
     public required BanWordStorage BanWordStorage { private get; init; }
     public required ItemMetadataStorage ItemMetadata { private get; init; }
     public required TableMetadataStorage TableMetadata { private get; init; }
+    public required ServerTableMetadataStorage ServerTableMetadata { private get; init; }
     // ReSharper restore All
     #endregion
 
@@ -58,13 +59,15 @@ public class CharacterManagementHandler : PacketHandler<LoginSession> {
                 HandleCreate(session, packet);
                 break;
             case Command.Delete:
-                HandleDelete(session, packet);
+                HandleDelete(session, packet, ServerTableMetadata.ConstantsTable.CharacterDestroyDivisionLevel,
+                    ServerTableMetadata.ConstantsTable.CharacterDestroyWaitSecond);
                 break;
             case Command.CancelDelete:
                 HandleCancelDelete(session, packet);
                 break;
             case Command.ConfirmDelete:
-                HandleDelete(session, packet);
+                HandleDelete(session, packet, ServerTableMetadata.ConstantsTable.CharacterDestroyDivisionLevel,
+                    ServerTableMetadata.ConstantsTable.CharacterDestroyWaitSecond);
                 break;
             default:
                 throw new ArgumentException($"Invalid CHARACTER_MANAGEMENT type {command}");
@@ -198,7 +201,7 @@ public class CharacterManagementHandler : PacketHandler<LoginSession> {
         session.CreateCharacter(character, outfits);
     }
 
-    private void HandleDelete(LoginSession session, IByteReader packet) {
+    private void HandleDelete(LoginSession session, IByteReader packet, int characterDestroyDivisionLevel, int characterDestroyWaitSecond) {
         long characterId = packet.ReadLong();
 
         using GameStorage.Request db = GameStorage.Context();
@@ -218,8 +221,8 @@ public class CharacterManagementHandler : PacketHandler<LoginSession> {
             return;
         }
 
-        if (character.Level >= Constant.CharacterDestroyDivisionLevel) {
-            character.DeleteTime = DateTimeOffset.UtcNow.AddSeconds(Constant.CharacterDestroyWaitSecond).ToUnixTimeSeconds();
+        if (character.Level >= characterDestroyDivisionLevel) {
+            character.DeleteTime = DateTimeOffset.UtcNow.AddSeconds(characterDestroyWaitSecond).ToUnixTimeSeconds();
             if (db.UpdateDelete(session.AccountId, characterId, character.DeleteTime)) {
                 session.Send(CharacterListPacket.BeginDelete(characterId, character.DeleteTime));
             } else {

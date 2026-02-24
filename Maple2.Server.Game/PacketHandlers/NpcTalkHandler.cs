@@ -237,7 +237,7 @@ public class NpcTalkHandler : FieldPacketHandler {
             case ScriptEventType.EnchantSelect:
             case ScriptEventType.PeachySelect:
                 if (!session.ScriptMetadata.TryGet(npcId, out ScriptMetadata? script) ||
-                    !script.States.TryGetValue(Constant.EnchantMasterScriptID, out ScriptState? state)) {
+                    !script.States.TryGetValue(session.ServerTableMetadata.ConstantsTable.EnchantMasterScriptID, out ScriptState? state)) {
                     return;
                 }
 

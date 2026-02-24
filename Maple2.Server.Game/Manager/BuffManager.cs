@@ -60,11 +60,11 @@ public class BuffManager : IUpdatable {
         }
     }
 
-    public void LoadFieldBuffs() {
+    public void LoadFieldBuffs(int shadowWorldBuffHpUp, int shadowWorldBuffMoveProtect) {
         // Lapenshards
         // Game Events
         // Prestige
-        EnterField();
+        EnterField(shadowWorldBuffHpUp, shadowWorldBuffMoveProtect);
         if (Actor is FieldPlayer player) {
             player.Session.Config.RefreshPremiumClubBuffs();
         }
@@ -438,7 +438,7 @@ public class BuffManager : IUpdatable {
         Remove(buffsToRemove.ToArray());
     }
 
-    private void EnterField() {
+    private void EnterField(int shadowWorldBuffHpUp, int shadowWorldBuffMoveProtect) {
         foreach (MapEntranceBuff buff in Actor.Field.Metadata.EntranceBuffs) {
             AddBuff(Actor, Actor, buff.Id, buff.Level, Actor.Field.FieldTick);
         }
@@ -458,8 +458,8 @@ public class BuffManager : IUpdatable {
         }
 
         if (Actor.Field.Metadata.Property.Region == MapRegion.ShadowWorld) {
-            AddBuff(Actor, Actor, Constant.shadowWorldBuffHpUp, 1, Actor.Field.FieldTick);
-            AddBuff(Actor, Actor, Constant.shadowWorldBuffMoveProtect, 1, Actor.Field.FieldTick);
+            AddBuff(Actor, Actor, shadowWorldBuffHpUp, 1, Actor.Field.FieldTick);
+            AddBuff(Actor, Actor, shadowWorldBuffMoveProtect, 1, Actor.Field.FieldTick);
         }
     }
 

@@ -71,7 +71,7 @@ public class ClubHandler : FieldPacketHandler {
             session.Send(ClubPacket.Error(ClubError.s_club_err_name_value));
             return;
         }
-        if (clubName.Length is < Constant.ClubNameLengthMin or > Constant.ClubNameLengthMax) {
+        if (clubName.Length < session.ServerTableMetadata.ConstantsTable.ClubNameLengthMin || clubName.Length > session.ServerTableMetadata.ConstantsTable.ClubNameLengthMax) {
             session.Send(ClubPacket.Error(ClubError.s_club_err_name_value));
             return;
         }
@@ -243,7 +243,7 @@ public class ClubHandler : FieldPacketHandler {
             session.Send(ClubPacket.Error(ClubError.s_club_err_name_value));
             return;
         }
-        if (newName.Length is < Constant.ClubNameLengthMin or > Constant.ClubNameLengthMax) {
+        if (newName.Length < session.ServerTableMetadata.ConstantsTable.ClubNameLengthMin || newName.Length > session.ServerTableMetadata.ConstantsTable.ClubNameLengthMax) {
             session.Send(ClubPacket.Error(ClubError.s_club_err_name_value));
             return;
         }

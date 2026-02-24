@@ -34,10 +34,11 @@ public class NpcMapper : TypeMapper<NpcMetadata> {
                     Avoid: data.distance.avoid,
                     Sight: data.distance.sight,
                     SightHeightUp: data.distance.sightHeightUP,
-                    SightHeightDown: data.distance.sightHeightDown,
-                    LastSightRadius: data.distance.customLastSightRadius == 0 ? Constant.NpcLastSightRadius : data.distance.customLastSightRadius,
-                    LastSightHeightUp: data.distance.customLastSightHeightUp == 0 ? Constant.NpcLastSightHeightUp : data.distance.customLastSightHeightUp,
-                    LastSightHeightDown: data.distance.customLastSightHeightDown == 0 ? Constant.NpcLastSightHeightDown : data.distance.customLastSightHeightDown
+                    SightHeightDown: data.distance.sightHeightDown
+                    // TODO: Need to move to runtime due to server table constants being used as default value
+                    //LastSightRadius: data.distance.customLastSightRadius == 0 ? Constant.NpcLastSightRadius : data.distance.customLastSightRadius,
+                    //LastSightHeightUp: data.distance.customLastSightHeightUp == 0 ? Constant.NpcLastSightHeightUp : data.distance.customLastSightHeightUp,
+                    //LastSightHeightDown: data.distance.customLastSightHeightDown == 0 ? Constant.NpcLastSightHeightDown : data.distance.customLastSightHeightDown
                 ),
                 Skill: new NpcMetadataSkill(
                     Entries: data.skill.ids.Select((skillId, i) =>

@@ -270,8 +270,8 @@ public class QuestHandler : FieldPacketHandler {
             return;
         }
 
-        session.Send(session.PrepareField(Constant.FameContentsSkyFortressGotoMapID,
-            Constant.FameContentsSkyFortressGotoPortalID)
+        session.Send(session.PrepareField(session.ServerTableMetadata.ConstantsTable.FameContentsSkyFortressGotoMapID,
+            session.ServerTableMetadata.ConstantsTable.FameContentsSkyFortressGotoPortalID)
             ? FieldEnterPacket.Request(session.Player)
             : FieldEnterPacket.Error(MigrationError.s_move_err_default));
     }

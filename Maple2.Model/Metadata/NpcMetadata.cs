@@ -34,10 +34,11 @@ public record NpcMetadataDistance(
     float Avoid,
     float Sight,
     float SightHeightUp,
-    float SightHeightDown,
-    float LastSightRadius,
-    float LastSightHeightUp,
-    float LastSightHeightDown);
+    float SightHeightDown
+    // TODO: Need to move to runtime due to server table constants being used as default value
+    /*  float LastSightRadius,
+      float LastSightHeightUp,
+      float LastSightHeightDown*/);
 
 public record NpcMetadataSkill(
     NpcMetadataSkill.Entry[] Entries,

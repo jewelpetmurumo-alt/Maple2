@@ -191,8 +191,8 @@ public class PlayerCommand : GameCommand {
 
         private void Handle(InvocationContext ctx, int level) {
             try {
-                if (level is < 1 or > Constant.AdventureLevelLimit) {
-                    ctx.Console.Error.WriteLine($"Invalid level: {level}. Must be between 1 and {Constant.AdventureLevelLimit}.");
+                if (level < 1 ||  level > session.ServerTableMetadata.ConstantsTable.AdventureLevelLimit) {
+                    ctx.Console.Error.WriteLine($"Invalid level: {level}. Must be between 1 and {session.ServerTableMetadata.ConstantsTable.AdventureLevelLimit}.");
                     return;
                 }
 
@@ -328,7 +328,7 @@ public class PlayerCommand : GameCommand {
 
             session.Player.Buffs.Clear();
             session.Player.Buffs.Initialize();
-            session.Player.Buffs.LoadFieldBuffs();
+            session.Player.Buffs.LoadFieldBuffs(session.ServerTableMetadata.ConstantsTable.shadowWorldBuffHpUp, session.ServerTableMetadata.ConstantsTable.shadowWorldBuffMoveProtect);
             session.Stats.Refresh();
             session.Field?.Broadcast(JobPacket.Advance(session.Player, session.Config.Skill.SkillInfo));
         }

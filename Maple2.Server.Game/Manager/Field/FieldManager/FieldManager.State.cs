@@ -204,15 +204,17 @@ public partial class FieldManager {
     }
 
     public FieldPortal SpawnPortal(QuestSummonPortal metadata, FieldNpc npc, FieldPlayer owner) {
-        var portal = new Portal(NextLocalId(), metadata.MapId, metadata.PortalId, PortalType.Quest, PortalActionType.Interact, npc.Position.Offset(Constant.QuestPortalDistanceFromNpc, npc.Rotation), npc.Rotation,
-            new Vector3(Constant.QuestPortalDistanceFromNpc, Constant.QuestPortalDimensionY, Constant.QuestPortalDimensionZ), Constant.QuestPortalDistanceFromNpc,
+        var portal = new Portal(NextLocalId(), metadata.MapId, metadata.PortalId, PortalType.Quest, PortalActionType.Interact,
+            npc.Position.Offset(owner.Session.ServerTableMetadata.ConstantsTable.QuestPortalDistanceFromNpc, npc.Rotation), npc.Rotation,
+            new Vector3(owner.Session.ServerTableMetadata.ConstantsTable.QuestPortalDistanceFromNpc, owner.Session.ServerTableMetadata.ConstantsTable.QuestPortalDimensionY,
+            owner.Session.ServerTableMetadata.ConstantsTable.QuestPortalDimensionZ), owner.Session.ServerTableMetadata.ConstantsTable.QuestPortalDistanceFromNpc,
             0, true, false, true);
         var fieldPortal = new FieldQuestPortal(owner, this, NextLocalId(), portal) {
             Position = portal.Position,
             Rotation = portal.Rotation,
-            EndTick = (FieldTick + (long) TimeSpan.FromSeconds(Constant.QuestPortalKeepTime).TotalMilliseconds).Truncate32(),
+            EndTick = (FieldTick + (long) TimeSpan.FromSeconds(owner.Session.ServerTableMetadata.ConstantsTable.QuestPortalKeepTime).TotalMilliseconds).Truncate32(),
             StartTick = FieldTickInt,
-            Model = Constant.QuestPortalKeepNif,
+            Model = owner.Session.ServerTableMetadata.ConstantsTable.QuestPortalKeepNif,
         };
         fieldPortals[fieldPortal.ObjectId] = fieldPortal;
 

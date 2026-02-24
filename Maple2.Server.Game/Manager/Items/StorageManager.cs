@@ -189,11 +189,11 @@ public sealed class StorageManager : IDisposable {
     public void Expand() {
         lock (session.Item) {
             short newSize = (short) (items.Size + Constant.InventoryExpandRowCount);
-            if (newSize > Constant.StoreExpandMaxSlotCount) {
+            if (newSize > session.ServerTableMetadata.ConstantsTable.StoreExpandMaxSlotCount) {
                 session.Send(StorageInventoryPacket.Error(s_store_err_expand_max));
                 return;
             }
-            if (session.Currency.Meret < Constant.StoreExpandPrice1Row) {
+            if (session.Currency.Meret < session.ServerTableMetadata.ConstantsTable.StoreExpandPrice1Row) {
                 session.Send(StorageInventoryPacket.Error(s_cannot_charge_merat));
                 return;
             }
@@ -203,7 +203,7 @@ public sealed class StorageManager : IDisposable {
                 return;
             }
 
-            session.Currency.Meret -= Constant.StoreExpandPrice1Row;
+            session.Currency.Meret -= session.ServerTableMetadata.ConstantsTable.StoreExpandPrice1Row;
             expand += Constant.InventoryExpandRowCount;
 
             Load();

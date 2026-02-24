@@ -44,23 +44,23 @@ public class InventoryManager {
         }
     }
 
-    private static short BaseSize(InventoryType type) {
+    private short BaseSize(InventoryType type) {
         return type switch {
-            InventoryType.Gear => Constant.BagSlotTabGameCount,
-            InventoryType.Outfit => Constant.BagSlotTabSkinCount,
-            InventoryType.Mount => Constant.BagSlotTabSummonCount,
-            InventoryType.Catalyst => Constant.BagSlotTabMaterialCount,
-            InventoryType.FishingMusic => Constant.BagSlotTabLifeCount,
-            InventoryType.Quest => Constant.BagSlotTabQuestCount,
-            InventoryType.Gemstone => Constant.BagSlotTabGemCount,
-            InventoryType.Misc => Constant.BagSlotTabMiscCount,
-            InventoryType.LifeSkill => Constant.BagSlotTabMasteryCount,
-            InventoryType.Pets => Constant.BagSlotTabPetCount,
-            InventoryType.Consumable => Constant.BagSlotTabActiveSkillCount,
-            InventoryType.Currency => Constant.BagSlotTabCoinCount,
-            InventoryType.Badge => Constant.BagSlotTabBadgeCount,
-            InventoryType.Lapenshard => Constant.BagSlotTabLapenshardCount,
-            InventoryType.Fragment => Constant.BagSlotTabPieceCount,
+            InventoryType.Gear => session.ServerTableMetadata.ConstantsTable.bagSlotTabGameCount,
+            InventoryType.Outfit => session.ServerTableMetadata.ConstantsTable.bagSlotTabSkinCount,
+            InventoryType.Mount => session.ServerTableMetadata.ConstantsTable.bagSlotTabSummonCount,
+            InventoryType.Catalyst => session.ServerTableMetadata.ConstantsTable.bagSlotTabMaterialCount,
+            InventoryType.FishingMusic => session.ServerTableMetadata.ConstantsTable.bagSlotTabLifeCount,
+            InventoryType.Quest => session.ServerTableMetadata.ConstantsTable.bagSlotTabQuestCount,
+            InventoryType.Gemstone => session.ServerTableMetadata.ConstantsTable.bagSlotTabGemCount,
+            InventoryType.Misc => session.ServerTableMetadata.ConstantsTable.bagSlotTabMiscCount,
+            InventoryType.LifeSkill => session.ServerTableMetadata.ConstantsTable.bagSlotTabMasteryCount,
+            InventoryType.Pets => session.ServerTableMetadata.ConstantsTable.bagSlotTabPetCount,
+            InventoryType.Consumable => session.ServerTableMetadata.ConstantsTable.bagSlotTabActiveSkillCount,
+            InventoryType.Currency => session.ServerTableMetadata.ConstantsTable.bagSlotTabCoinCount,
+            InventoryType.Badge => session.ServerTableMetadata.ConstantsTable.bagSlotTabBadgeCount,
+            InventoryType.Lapenshard => session.ServerTableMetadata.ConstantsTable.bagSlotTabLapenShardCount,
+            InventoryType.Fragment => session.ServerTableMetadata.ConstantsTable.bagSlotTabPieceCount,
             _ => throw new ArgumentOutOfRangeException($"Invalid InventoryType: {type}"),
         };
     }
@@ -557,7 +557,7 @@ public class InventoryManager {
                 return false;
             }
 
-            if (session.Currency.Meret < Constant.InventoryExpandPrice1Row) {
+            if (session.Currency.Meret < session.ServerTableMetadata.ConstantsTable.InventoryExpandPrice1Row) {
                 session.Send(ItemInventoryPacket.Error(s_cannot_charge_merat));
                 return false;
             }
@@ -566,7 +566,7 @@ public class InventoryManager {
                 return false;
             }
 
-            session.Currency.Meret -= Constant.InventoryExpandPrice1Row;
+            session.Currency.Meret -= session.ServerTableMetadata.ConstantsTable.InventoryExpandPrice1Row;
             if (session.Player.Value.Unlock.Expand.ContainsKey(type)) {
                 session.Player.Value.Unlock.Expand[type] = newExpand;
             } else {

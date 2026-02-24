@@ -168,7 +168,7 @@ public class FieldPlayer : Actor<Player> {
             return;
         }
 
-        if (InBattle && tickCount - battleTick > Constant.UserBattleDurationTick) {
+        if (InBattle && tickCount - battleTick > Session.ServerTableMetadata.ConstantsTable.UserBattleDurationTick) {
             InBattle = false;
         }
 
@@ -402,7 +402,7 @@ public class FieldPlayer : Actor<Player> {
 
         // Apply death penalty if field requires it
         if (Field.Metadata.Property.DeathPenalty) {
-            Session.Config.UpdateDeathPenalty(Field.FieldTick + Constant.UserRevivalPaneltyTick);
+            Session.Config.UpdateDeathPenalty(Field.FieldTick + Session.ServerTableMetadata.ConstantsTable.UserRevivalPaneltyTick);
         }
 
         // Update revival condition
@@ -474,7 +474,7 @@ public class FieldPlayer : Actor<Player> {
         Stat stat = Stats.Values[BasicAttribute.Health];
         stat.Add(-amount);
         if (!IsDead) {
-            lastRegenTime[BasicAttribute.Health] = Field.FieldTick + Constant.RecoveryHPWaitTick;
+            lastRegenTime[BasicAttribute.Health] = Field.FieldTick + Session.ServerTableMetadata.ConstantsTable.RecoveryHPWaitTick;
         }
         Session.Send(StatsPacket.Update(this, BasicAttribute.Health));
 
@@ -547,7 +547,7 @@ public class FieldPlayer : Actor<Player> {
 
         Stats.Values[BasicAttribute.Stamina].Add(-amount);
         if (!IsDead) {
-            lastRegenTime[BasicAttribute.Stamina] = Field.FieldTick + Constant.RecoveryEPWaitTick;
+            lastRegenTime[BasicAttribute.Stamina] = Field.FieldTick + Session.ServerTableMetadata.ConstantsTable.RecoveryEPWaitTick;
         }
         Field.Broadcast(StatsPacket.Update(this, BasicAttribute.Stamina));
     }

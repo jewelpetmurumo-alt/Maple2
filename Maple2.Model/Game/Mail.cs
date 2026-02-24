@@ -34,6 +34,14 @@ public class Mail : IByteSerializable {
     // More than 1 item may not display properly
     public readonly IList<Item> Items;
 
+    // Specifically for Mail object cloning (Mail.cs:57)
+    public Mail() {
+        TitleArgs = new List<(string Key, string Value)>();
+        ContentArgs = new List<(string Key, string Value)>();
+        Items = new List<Item>();
+        // ExpiryTime will be overwritten, no need to set it here with a parameter passing server constant value.
+    }
+
     public Mail(int mailExpiryDays) {
         TitleArgs = new List<(string Key, string Value)>();
         ContentArgs = new List<(string Key, string Value)>();
