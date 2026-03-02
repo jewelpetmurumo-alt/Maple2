@@ -16,6 +16,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Reflection;
 using System.Xml;
+using Maple2.File.Parser.Xml.Table;
 using DayOfWeek = System.DayOfWeek;
 using ExpType = Maple2.Model.Enum.ExpType;
 using Fish = Maple2.File.Parser.Xml.Table.Server.Fish;
@@ -2117,16 +2118,18 @@ public class ServerTableMapper : TypeMapper<ServerTableMetadata> {
 
     private ConstantsTable ParseConstants() {
         var constants = new ConstantsTable();
-        PropertyInfo[] constantsProperties = constants.GetType().GetProperties();
-        foreach (PropertyInfo constantsProperty in constantsProperties) {
-            foreach ((string key, Parser.Xml.Table.Constants.Key constant) in parser.ParseConstants()) {
-                string constantPropertyName = constantsProperty.Name.Trim();
-                if (!key.Trim().Equals(constantPropertyName)) continue;
-                Type constantsPropertyType = constantsProperty.PropertyType;
-                string cleanConstantValue = CleanConstantsInput(constant.value.Trim(), constantPropertyName, constantsPropertyType);
-                SetValue(constantsProperty, constants, cleanConstantValue);
-                break;
-            }
+        Dictionary<string, PropertyInfo> propertyLookup = typeof(ConstantsTable).GetProperties()
+            .ToDictionary(p => p.Name.Trim(), p => p, StringComparer.OrdinalIgnoreCase);
+
+        foreach ((string key, Constants.Key constant) in parser.ParseConstants()) {
+            string trimmedKey = key.Trim();
+            if (!propertyLookup.TryGetValue(trimmedKey, out PropertyInfo? property)) continue;
+            string cleanValue = CleanConstantsInput(
+                constant.value.Trim(),
+                trimmedKey,
+                property.PropertyType
+            );
+            SetValue(property, constants, cleanValue);
         }
         return constants;
     }
