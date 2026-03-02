@@ -127,8 +127,8 @@ public class PlayerCommand : GameCommand {
 
         private void Handle(InvocationContext ctx, short level) {
             try {
-                if (level is < 1 or > Constant.characterMaxLevel) {
-                    ctx.Console.Error.WriteLine($"Invalid level: {level}. Must be between 1 and {Constant.characterMaxLevel}.");
+                if (level < 1 || level > session.ServerTableMetadata.ConstantsTable.characterMaxLevel) {
+                    ctx.Console.Error.WriteLine($"Invalid level: {level}. Must be between 1 and {session.ServerTableMetadata.ConstantsTable.characterMaxLevel}.");
                     return;
                 }
 

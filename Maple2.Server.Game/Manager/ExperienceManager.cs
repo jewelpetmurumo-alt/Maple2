@@ -175,7 +175,7 @@ public sealed class ExperienceManager {
 
     public bool LevelUp() {
         int startLevel = Level;
-        for (int level = startLevel; level < Constant.characterMaxLevel; level++) {
+        for (int level = startLevel; level < session.ServerTableMetadata.ConstantsTable.characterMaxLevel; level++) {
             if (!session.TableMetadata.ExpTable.NextExp.TryGetValue(level, out long expToNextLevel) || expToNextLevel > Exp) {
                 break;
             }

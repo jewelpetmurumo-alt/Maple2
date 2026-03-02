@@ -266,7 +266,7 @@ public class QuestHandler : FieldPacketHandler {
     }
 
     private static void HandleSkyFortressTeleport(GameSession session) {
-        if (!session.Quest.TryGetQuest(Constant.FameContentsRequireQuestID, out Quest? quest) || quest.State != QuestState.Completed) {
+        if (!session.Quest.TryGetQuest(session.ServerTableMetadata.ConstantsTable.FameContentsRequireQuestID, out Quest? quest) || quest.State != QuestState.Completed) {
             return;
         }
 
