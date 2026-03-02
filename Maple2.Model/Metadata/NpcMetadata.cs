@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.Design;
 using System.Numerics;
+using System.Text.Json.Serialization;
 using Maple2.Model.Enum;
 
 namespace Maple2.Model.Metadata;
@@ -57,6 +58,7 @@ public record NpcMetadataDistance(
     float Sight,
     float SightHeightUp,
     float SightHeightDown) {
+    [JsonConstructor]
     public NpcMetadataDistance(float avoid, float sight, float sightHeightUp, float sightHeightDown, float lastSightRadius,
         float lastSightHeightUp, float lastSightHeightDown) : this(avoid, sight, sightHeightUp, sightHeightDown) {
         LastSightRadius = lastSightRadius;
