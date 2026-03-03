@@ -66,32 +66,17 @@ public class GameServer : Server<GameSession> {
     public override void OnConnected(GameSession session) {
         lock (mutex) {
             connectingSessions.Remove(session);
-
-            if (session.CharacterId != 0) {
-                sessions[session.CharacterId] = session;
-            }
-
-            // 可选：避免残留的 0 键占位
-            if (sessions.TryGetValue(0, out GameSession? zero) && ReferenceEquals(zero, session)) {
-                sessions.Remove(0);
-            }
+            sessions[session.CharacterId] = session;
         }
     }
+
     public override void OnDisconnected(GameSession session) {
         lock (mutex) {
             connectingSessions.Remove(session);
-
-            long cid = session.CharacterId;
-            if (cid == 0) return;
-
-            // 关键：只允许“当前登记在 sessions 里的那个会话”删除自己
-            // 迁移/换图时会出现：新会话先注册，旧会话后断开
-            // 如果这里无条件 Remove，会把新会话也删掉 => Heartbeat unknown => 假离线
-            if (sessions.TryGetValue(cid, out GameSession? current) && ReferenceEquals(current, session)) {
-                sessions.Remove(cid);
-            }
+            sessions.Remove(session.CharacterId);
         }
     }
+
     public bool GetSession(long characterId, [NotNullWhen(true)] out GameSession? session) {
         lock (mutex) {
             return sessions.TryGetValue(characterId, out session);

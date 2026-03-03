@@ -582,9 +582,9 @@ public partial class GameStorage {
             model.Password = BCrypt.Net.BCrypt.HashPassword(password, 13);
 #if DEBUG
             model.Currency = new AccountCurrency {
-                Meret = 1_000_00,
+                Meret = 9_999_999,
             };
-//            model.Permissions = AdminPermissions.Admin.ToString();
+            model.Permissions = AdminPermissions.Admin.ToString();
 #endif
             Context.Account.Add(model);
             Context.SaveChanges(); // Exception if failed.
@@ -609,7 +609,7 @@ public partial class GameStorage {
             model.Channel = -1;
 #if DEBUG
             model.Currency = new CharacterCurrency {
-                Meso = 500000,
+                Meso = 999999999,
             };
 #endif
             Context.Character.Add(model);

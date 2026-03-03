@@ -83,23 +83,10 @@ public class PlayerInfoStorage {
     }
 
     public void SendUpdate(PlayerUpdateRequest request) {
-        // 对“上线态/频道/地图”更新非常关键，不能静默吞掉失败
-        const int maxRetries = 3;
-        for (int i = 0; i < maxRetries; i++) {
-            try {
-                world.UpdatePlayer(request);
-                return;
-            } catch (RpcException ex) {
-                logger.Warning("SendUpdate(UpdatePlayer) failed attempt {Attempt}/{Max}. Status={Status}",
-                    i + 1, maxRetries, ex.Status);
-
-                // 小退避，避免瞬间打爆
-                Thread.Sleep(200 * (i + 1));
-            } catch (Exception ex) {
-                logger.Warning(ex, "SendUpdate(UpdatePlayer) unexpected failure");
-                Thread.Sleep(200 * (i + 1));
-            }
-        }
+        try {
+            //PlayerInfoCache
+            world.UpdatePlayer(request);
+        } catch (RpcException) { /* ignored */ }
     }
 
     public bool ReceiveUpdate(PlayerUpdateRequest request) {
