@@ -47,11 +47,11 @@ public class SystemShopHandler : FieldPacketHandler {
             return;
         }
 
-        if (!session.NpcMetadata.TryGet(Constant.SystemShopNPCIDHonorToken, out NpcMetadata? npc)) {
+        if (!session.NpcMetadata.TryGet(session.ServerTableMetadata.ConstantsTable.SystemShopNPCIDHonorToken, out NpcMetadata? npc)) {
             return;
         }
 
-        session.Shop.Load(npc.Basic.ShopId, Constant.SystemShopNPCIDHonorToken);
+        session.Shop.Load(npc.Basic.ShopId, session.ServerTableMetadata.ConstantsTable.SystemShopNPCIDHonorToken);
         session.Send(SystemShopPacket.Arena());
     }
 
@@ -61,7 +61,7 @@ public class SystemShopHandler : FieldPacketHandler {
             session.Shop.ClearActiveShop();
             return;
         }
-        if (!session.NpcMetadata.TryGet(Constant.SystemShopNPCIDFishing, out NpcMetadata? npc)) {
+        if (!session.NpcMetadata.TryGet(session.ServerTableMetadata.ConstantsTable.SystemShopNPCIDFishing, out NpcMetadata? npc)) {
             return;
         }
 
@@ -76,7 +76,7 @@ public class SystemShopHandler : FieldPacketHandler {
             return;
         }
 
-        if (!session.NpcMetadata.TryGet(Constant.SystemShopNPCIDMentee, out NpcMetadata? npc)) {
+        if (!session.NpcMetadata.TryGet(session.ServerTableMetadata.ConstantsTable.SystemShopNPCIDMentee, out NpcMetadata? npc)) {
             return;
         }
 
@@ -91,7 +91,7 @@ public class SystemShopHandler : FieldPacketHandler {
             return;
         }
 
-        if (!session.NpcMetadata.TryGet(Constant.SystemShopNPCIDMentor, out NpcMetadata? npc)) {
+        if (!session.NpcMetadata.TryGet(session.ServerTableMetadata.ConstantsTable.SystemShopNPCIDMentor, out NpcMetadata? npc)) {
             return;
         }
 

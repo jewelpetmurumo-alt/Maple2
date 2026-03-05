@@ -447,7 +447,7 @@ public class WorldServer {
                         SetPlotAsPending(db, plot);
                         forfeit = true;
                         // mark as open when 3 days has passed since the expiry time
-                    } else if (plot.OwnerId == 0 && plot.ExpiryTime + Constant.UgcHomeSaleWaitingTime.TotalSeconds < DateTimeOffset.UtcNow.ToUnixTimeSeconds()) {
+                    } else if (plot.OwnerId == 0 && plot.ExpiryTime + serverTableMetadata.ConstantsTable.UgcHomeSaleWaitingTime.TotalSeconds < DateTimeOffset.UtcNow.ToUnixTimeSeconds()) {
                         logger.Information("Marking plot {PlotId} as open (no owner)", plot.Id);
                         db.SetPlotOpen(plot.Id); // Mark as open
                     } else {
@@ -474,7 +474,7 @@ public class WorldServer {
         }
 
         // Schedule next check for the next soonest expiry
-        PlotInfo? nextPlot = db.GetSoonestPlotFromExpire();
+        PlotInfo? nextPlot = db.GetSoonestPlotFromExpire(serverTableMetadata.ConstantsTable.UgcHomeSaleWaitingTime);
         TimeSpan delay;
         if (nextPlot is not null) {
             DateTimeOffset nextExpiry = DateTimeOffset.FromUnixTimeSeconds(nextPlot.ExpiryTime);

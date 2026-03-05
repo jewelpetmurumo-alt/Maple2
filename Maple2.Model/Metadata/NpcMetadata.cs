@@ -1,4 +1,6 @@
-﻿using System.Numerics;
+﻿using System.ComponentModel.Design;
+using System.Numerics;
+using System.Text.Json.Serialization;
 using Maple2.Model.Enum;
 
 namespace Maple2.Model.Metadata;
@@ -17,7 +19,14 @@ public record NpcMetadata(
     NpcMetadataAction Action,
     NpcMetadataDead Dead,
     NpcMetadataCorpse? Corpse,
-    NpcMetadataLookAtTarget LookAtTarget) : ISearchResult;
+    NpcMetadataLookAtTarget LookAtTarget) : ISearchResult {
+    public NpcMetadata(NpcMetadata other, float lastSightRadius, float lastSightHeightUp, float lastSightHeightDown) : this(other.Id,
+        other.Name, other.AiPath, other.Model, other.Stat, other.Basic, other.Distance, other.Skill, other.Property, other.DropInfo,
+        other.Action, other.Dead, other.Corpse, other.LookAtTarget) {
+        Distance = new NpcMetadataDistance(Distance.Avoid, Distance.Sight, Distance.SightHeightUp,
+            Distance.SightHeightDown, lastSightRadius, lastSightHeightUp, lastSightHeightDown);
+    }
+}
 
 public record NpcMetadataModel(
     string Name,
@@ -35,10 +44,19 @@ public record NpcMetadataDistance(
     float Avoid,
     float Sight,
     float SightHeightUp,
-    float SightHeightDown,
-    float LastSightRadius,
-    float LastSightHeightUp,
-    float LastSightHeightDown);
+    float SightHeightDown) {
+    [JsonConstructor]
+    public NpcMetadataDistance(float avoid, float sight, float sightHeightUp, float sightHeightDown, float lastSightRadius,
+        float lastSightHeightUp, float lastSightHeightDown) : this(avoid, sight, sightHeightUp, sightHeightDown) {
+        LastSightRadius = lastSightRadius;
+        LastSightHeightUp = lastSightHeightUp;
+        LastSightHeightDown = lastSightHeightDown;
+    }
+
+    public float LastSightRadius { get; private set; }
+    public float LastSightHeightUp { get; private set; }
+    public float LastSightHeightDown { get; private set; }
+}
 
 public record NpcMetadataSkill(
     NpcMetadataSkill.Entry[] Entries,

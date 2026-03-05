@@ -136,12 +136,12 @@ public class TaxiHandler : FieldPacketHandler {
             return;
         }
 
-        if (session.Currency.Meret < Constant.MeretAirTaxiPrice) {
+        if (session.Currency.Meret < session.ServerTableMetadata.ConstantsTable.MeratAirTaxiPrice) {
             session.Send(NoticePacket.MessageBox(StringCode.s_err_lack_meso));
             return;
         }
 
-        session.Currency.Meret -= Constant.MeretAirTaxiPrice;
+        session.Currency.Meret -= session.ServerTableMetadata.ConstantsTable.MeratAirTaxiPrice;
 
         session.Send(session.PrepareField(mapId)
             ? FieldEnterPacket.Request(session.Player)

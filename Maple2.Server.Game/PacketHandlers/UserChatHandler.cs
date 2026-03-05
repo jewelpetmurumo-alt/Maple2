@@ -180,7 +180,7 @@ public class UserChatHandler : FieldPacketHandler {
             }
             session.Send(NoticePacket.Notice(NoticePacket.Flags.Alert | NoticePacket.Flags.Message, StringCode.s_worldchat_use_coupon));
         } else {
-            int meretCost = Constant.MeretConsumeWorldChat;
+            int meretCost = session.ServerTableMetadata.ConstantsTable.MeratConsumeWorldChat;
             if (session.FindEvent(GameEventType.SaleChat).FirstOrDefault()?.Metadata.Data is SaleChat gameEvent) {
                 meretCost -= (int) (meretCost * Convert.ToSingle(gameEvent.WorldChatDiscount) / 10000);
             }
@@ -215,7 +215,7 @@ public class UserChatHandler : FieldPacketHandler {
             }
             session.Send(NoticePacket.Notice(NoticePacket.Flags.Alert | NoticePacket.Flags.Message, StringCode.s_channelchat_use_coupon));
         } else {
-            int meretCost = Constant.MeretConsumeChannelChat;
+            int meretCost = session.ServerTableMetadata.ConstantsTable.MeratConsumeChannelChat;
             if (session.FindEvent(GameEventType.SaleChat).FirstOrDefault()?.Metadata.Data is SaleChat gameEvent) {
                 meretCost -= (int) (meretCost * Convert.ToSingle(gameEvent.ChannelChatDiscount) / 10000);
             }

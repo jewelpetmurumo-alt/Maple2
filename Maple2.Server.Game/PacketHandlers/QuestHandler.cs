@@ -266,12 +266,12 @@ public class QuestHandler : FieldPacketHandler {
     }
 
     private static void HandleSkyFortressTeleport(GameSession session) {
-        if (!session.Quest.TryGetQuest(Constant.FameContentsRequireQuestID, out Quest? quest) || quest.State != QuestState.Completed) {
+        if (!session.Quest.TryGetQuest(session.ServerTableMetadata.ConstantsTable.FameContentsRequireQuestID, out Quest? quest) || quest.State != QuestState.Completed) {
             return;
         }
 
-        session.Send(session.PrepareField(Constant.FameContentsSkyFortressGotoMapID,
-            Constant.FameContentsSkyFortressGotoPortalID)
+        session.Send(session.PrepareField(session.ServerTableMetadata.ConstantsTable.FameContentsSkyFortressGotoMapID,
+            session.ServerTableMetadata.ConstantsTable.FameContentsSkyFortressGotoPortalID)
             ? FieldEnterPacket.Request(session.Player)
             : FieldEnterPacket.Error(MigrationError.s_move_err_default));
     }

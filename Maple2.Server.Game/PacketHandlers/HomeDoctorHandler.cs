@@ -15,7 +15,7 @@ public class HomeDoctorHandler : FieldPacketHandler {
     public override void Handle(GameSession session, IByteReader packet) {
         if (session.Field is null) return;
         long time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        if (session.Player.Value.Character.DoctorCooldown + Constant.HomeDoctorCallCooldown > time) {
+        if (session.Player.Value.Character.DoctorCooldown + session.ServerTableMetadata.ConstantsTable.HomeDoctorCallCooltime > time) {
             return;
         }
 
