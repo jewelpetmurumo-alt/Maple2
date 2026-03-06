@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Numerics;
 using Maple2.Model.Enum;
 using Maple2.Model.Metadata;
+using Maple2.Model.Game.Dungeon;
 using Maple2.Server.Game.Manager.Field;
 using Maple2.Server.Game.Model.Skill;
 using Maple2.Tools.VectorMath;
@@ -153,13 +154,36 @@ public abstract class Actor<T> : IActor<T>, IDisposable {
             Field.Broadcast(StatsPacket.Update(this, BasicAttribute.Health));
             OnDamageReceived(caster, positiveDamage);
 
-            if (caster is FieldPlayer casterPlayer && casterPlayer.Session.Dungeon.UserRecord != null) {
-                casterPlayer.Session.Dungeon.UserRecord.AccumulationRecords[DungeonAccumulationRecordType.TotalDamage] += (int) positiveDamage;
-                casterPlayer.Session.Dungeon.UserRecord.AccumulationRecords[DungeonAccumulationRecordType.TotalHitCount] += targetRecord.Damage.Count(x => x.Amount > 0 && x.Type is DamageType.Normal or DamageType.Critical);
-                casterPlayer.Session.Dungeon.UserRecord.AccumulationRecords[DungeonAccumulationRecordType.TotalCriticalDamage] += (int) targetRecord.Damage.Where(x => x.Type == DamageType.Critical).Sum(x => x.Amount);
+            if (caster is FieldPlayer casterPlayer) {
+                long totalDamage = 0;
+                long criticalDamage = 0;
+                long totalHitCount = 0;
+
+                foreach ((DamageType damageType, long amount) in targetRecord.Damage) {
+                    switch (damageType) {
+                        case DamageType.Normal:
+                            totalDamage += amount;
+                            totalHitCount++;
+                            break;
+                        case DamageType.Critical:
+                            totalDamage += amount;
+                            criticalDamage += amount;
+                            totalHitCount++;
+                            break;
+                    }
+                }
+
+                AddDungeonAccumulation(casterPlayer.Session.Dungeon.UserRecord, DungeonAccumulationRecordType.TotalDamage, totalDamage);
+                AddDungeonAccumulation(casterPlayer.Session.Dungeon.UserRecord, DungeonAccumulationRecordType.TotalHitCount, totalHitCount);
+                AddDungeonAccumulation(casterPlayer.Session.Dungeon.UserRecord, DungeonAccumulationRecordType.TotalCriticalDamage, criticalDamage);
+                SetDungeonAccumulationMax(casterPlayer.Session.Dungeon.UserRecord, DungeonAccumulationRecordType.MaximumCriticalDamage, criticalDamage);
+                if (damage.SkillId == 0) {
+                    AddDungeonAccumulation(casterPlayer.Session.Dungeon.UserRecord, DungeonAccumulationRecordType.BasicAttackDamage, totalDamage);
+                }
             }
-            if (this is FieldPlayer targetPlayer && targetPlayer.Session.Dungeon.UserRecord != null) {
-                targetPlayer.Session.Dungeon.UserRecord.AccumulationRecords[DungeonAccumulationRecordType.IncomingDamage] += (int) positiveDamage;
+
+            if (this is FieldPlayer targetPlayer) {
+                AddDungeonAccumulation(targetPlayer.Session.Dungeon.UserRecord, DungeonAccumulationRecordType.IncomingDamage, positiveDamage);
             }
         }
 
@@ -184,6 +208,24 @@ public abstract class Actor<T> : IActor<T>, IDisposable {
         }
     }
 
+
+    private static void AddDungeonAccumulation(DungeonUserRecord? userRecord, DungeonAccumulationRecordType type, long amount) {
+        if (userRecord == null || amount <= 0) {
+            return;
+        }
+
+        userRecord.AccumulationRecords.AddOrUpdate(type, (int) Math.Min(amount, int.MaxValue),
+            (_, current) => (int) Math.Min((long) current + amount, int.MaxValue));
+    }
+
+    private static void SetDungeonAccumulationMax(DungeonUserRecord? userRecord, DungeonAccumulationRecordType type, long amount) {
+        if (userRecord == null || amount <= 0) {
+            return;
+        }
+
+        userRecord.AccumulationRecords.AddOrUpdate(type, (int) Math.Min(amount, int.MaxValue),
+            (_, current) => Math.Max(current, (int) Math.Min(amount, int.MaxValue)));
+    }
     protected virtual void OnDamageReceived(IActor caster, long amount) { }
 
     public virtual void Reflect(IActor target) {

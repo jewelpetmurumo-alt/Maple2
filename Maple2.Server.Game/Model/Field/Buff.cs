@@ -208,11 +208,16 @@ public class Buff : IUpdatable, IByteSerializable {
             updated.Add(BasicAttribute.Stamina);
         }
 
+        if (record.HpAmount > 0 && Caster is FieldPlayer casterPlayer) {
+            casterPlayer.Session.Dungeon.UserRecord?.AccumulationRecords.AddOrUpdate(
+                DungeonAccumulationRecordType.TotalHealing,
+                record.HpAmount,
+                (_, current) => (int) Math.Min((long) current + record.HpAmount, int.MaxValue)
+            );
+        }
+
         if (updated.Count > 0) {
             Field.Broadcast(StatsPacket.Update(Owner, updated.ToArray()));
-        }
-        if (Caster is FieldPlayer casterPlayer && casterPlayer.Session.Dungeon.UserRecord != null && record.HpAmount > 0) {
-            casterPlayer.Session.Dungeon.UserRecord.AccumulationRecords[DungeonAccumulationRecordType.TotalHealing] += record.HpAmount;
         }
         Field.Broadcast(SkillDamagePacket.Heal(record));
     }
@@ -247,6 +252,13 @@ public class Buff : IUpdatable, IByteSerializable {
         Field.Broadcast(SkillDamagePacket.DotDamage(record));
         if (record.RecoverHp != 0) {
             Caster.Stats.Values[BasicAttribute.Health].Add(record.RecoverHp);
+            if (record.RecoverHp > 0 && Caster is FieldPlayer casterPlayer) {
+                casterPlayer.Session.Dungeon.UserRecord?.AccumulationRecords.AddOrUpdate(
+                    DungeonAccumulationRecordType.TotalHealing,
+                    record.RecoverHp,
+                    (_, current) => (int) Math.Min((long) current + record.RecoverHp, int.MaxValue)
+                );
+            }
             Field.Broadcast(StatsPacket.Update(Caster, BasicAttribute.Health));
         }
     }

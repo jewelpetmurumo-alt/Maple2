@@ -249,7 +249,9 @@ public class DungeonManager {
         Lobby = field;
         LobbyRoomId = field.RoomId;
         Metadata = field.DungeonMetadata;
-        UserRecord = new DungeonUserRecord(field.DungeonId, session.CharacterId);
+        UserRecord = new DungeonUserRecord(field.DungeonId, session.CharacterId) {
+            WithParty = field.Size > 1 || field.PartyId != 0,
+        };
 
         foreach (int missionId in Metadata.UserMissions) {
             //TODO

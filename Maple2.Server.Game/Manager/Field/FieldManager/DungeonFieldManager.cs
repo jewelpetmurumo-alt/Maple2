@@ -33,25 +33,15 @@ public class DungeonFieldManager : FieldManager {
 
         var compiledResults = new Dictionary<long, DungeonUserResult>();
 
-        // Get player's best record
+        // Party meter should compare the same metric across all party members.
+        // Use TotalDamage for everyone instead of assigning each character a different “best” category.
         foreach ((long characterId, DungeonUserRecord userRecord) in DungeonRoomRecord.UserResults) {
-            if (compiledResults.ContainsKey(characterId)) {
-                continue;
-            }
-
             if (!TryGetPlayerById(characterId, out FieldPlayer? _)) {
                 continue;
             }
 
-            List<KeyValuePair<DungeonAccumulationRecordType, int>> recordkvp = userRecord.AccumulationRecords.OrderByDescending(record => record.Value).ToList();
-            foreach (KeyValuePair<DungeonAccumulationRecordType, int> kvp in recordkvp) {
-                if (compiledResults.ContainsKey(characterId) || compiledResults.Values.Any(x => x.RecordType == kvp.Key)) {
-                    continue;
-                }
-
-                compiledResults.Add(characterId, new DungeonUserResult(characterId, kvp.Key, kvp.Value + 1));
-                break;
-            }
+            userRecord.AccumulationRecords.TryGetValue(DungeonAccumulationRecordType.TotalDamage, out int totalDamage);
+            compiledResults[characterId] = new DungeonUserResult(characterId, DungeonAccumulationRecordType.TotalDamage, totalDamage);
         }
 
         Broadcast(DungeonRoomPacket.DungeonResult(DungeonRoomRecord.State, compiledResults));

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using Maple2.Model.Enum;
 using Maple2.PacketLib.Tools;
+using Maple2.Tools.Extensions;
 
 namespace Maple2.Model.Game.Dungeon;
 
@@ -86,5 +87,23 @@ public class DungeonUserRecord : IUserContentRecord {
             writer.WriteBool(item.Unknown2);
             writer.WriteBool(item.Unknown3);
         }
+
+        // Party meter / performance details.
+        // Keep this block after the reward data to preserve the packet layout that already works
+        // for the personal reward/result UI, while still exposing dungeon accumulation records
+        // to clients that read the extended statistics section.
+        writer.WriteInt(AccumulationRecords.Count);
+        foreach ((DungeonAccumulationRecordType type, int value) in AccumulationRecords.OrderBy(entry => (int) entry.Key)) {
+            writer.Write<DungeonAccumulationRecordType>(type);
+            writer.WriteInt(value);
+        }
+
+        writer.WriteInt(Missions.Count);
+        foreach (DungeonMission mission in Missions.Values.OrderBy(mission => mission.Id)) {
+            writer.WriteClass<DungeonMission>(mission);
+        }
+
+        writer.Write<DungeonBonusFlag>(Flag);
+        writer.WriteInt(Round);
     }
 }
