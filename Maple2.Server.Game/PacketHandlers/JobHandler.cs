@@ -93,7 +93,7 @@ public class JobHandler : FieldPacketHandler {
 
         session.Player.Buffs.Clear();
         session.Player.Buffs.Initialize();
-        session.Player.Buffs.LoadFieldBuffs(session.ServerTableMetadata.ConstantsTable.shadowWorldBuffHpUp, session.ServerTableMetadata.ConstantsTable.shadowWorldBuffMoveProtect);
+        session.Player.Buffs.LoadFieldBuffs();
         session.Stats.Refresh();
         session.Field.Broadcast(JobPacket.Advance(session.Player, session.Config.Skill.SkillInfo));
         session.ConditionUpdate(ConditionType.job, codeLong: (int) session.NpcScript.JobCondition.ChangeToJobCode);

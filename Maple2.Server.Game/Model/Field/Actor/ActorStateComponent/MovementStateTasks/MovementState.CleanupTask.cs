@@ -33,8 +33,7 @@ public partial class MovementState {
                 return;
             }
 
-            float maxDistance = player.Session.ServerTableMetadata.ConstantsTable.TalkableDistance *
-                                player.Session.ServerTableMetadata.ConstantsTable.TalkableDistance;
+            const float maxDistance = Constant.TalkableDistance * Constant.TalkableDistance;
 
             // find nearest npc
             FieldNpc? closestNpc = player.Field.Npcs.Values

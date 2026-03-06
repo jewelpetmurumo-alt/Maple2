@@ -121,11 +121,11 @@ public class SkillManager {
         if (SkillBook.MaxSkillTabs >= Constant.MaxSkillTabCount) {
             return false;
         }
-        if (session.Currency.Meret < session.ServerTableMetadata.ConstantsTable.SkillBookTreeAddTabFeeMerat) {
+        if (session.Currency.Meret < Constant.SkillBookTreeAddTabFeeMeret) {
             return false;
         }
 
-        session.Currency.Meret -= session.ServerTableMetadata.ConstantsTable.SkillBookTreeAddTabFeeMerat;
+        session.Currency.Meret -= Constant.SkillBookTreeAddTabFeeMeret;
         SkillBook.MaxSkillTabs++;
         session.Send(SkillBookPacket.Expand(SkillBook));
 

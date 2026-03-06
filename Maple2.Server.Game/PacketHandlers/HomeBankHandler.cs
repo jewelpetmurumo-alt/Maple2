@@ -20,7 +20,7 @@ public class HomeBankHandler : FieldPacketHandler {
         switch (command) {
             case Command.Home:
                 long time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                if (session.Player.Value.Character.StorageCooldown + session.ServerTableMetadata.ConstantsTable.HomeBankCallCooltime > time) {
+                if (session.Player.Value.Character.StorageCooldown + Constant.HomeBankCallCooldown > time) {
                     return;
                 }
 

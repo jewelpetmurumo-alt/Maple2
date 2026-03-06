@@ -434,7 +434,7 @@ public sealed partial class GameSession : Core.Network.Session {
         Player.Dispose();
         Player = Field.SpawnPlayer(this, Player, portalId, position, rotation);
         Config.Skill.UpdatePassiveBuffs();
-        Player.Buffs.LoadFieldBuffs(Player.Session.ServerTableMetadata.ConstantsTable.shadowWorldBuffHpUp, Player.Session.ServerTableMetadata.ConstantsTable.shadowWorldBuffMoveProtect);
+        Player.Buffs.LoadFieldBuffs();
         Player.CheckRegen();
 
         return true;
@@ -490,7 +490,7 @@ public sealed partial class GameSession : Core.Network.Session {
         Config.LoadRevival();
         Config.LoadStatAttributes();
         Config.LoadSkillPoints();
-        Player.Buffs.LoadFieldBuffs(Player.Session.ServerTableMetadata.ConstantsTable.shadowWorldBuffHpUp, Player.Session.ServerTableMetadata.ConstantsTable.shadowWorldBuffMoveProtect);
+        Player.Buffs.LoadFieldBuffs();
 
         TimeEventResponse globalEventResponse = World.TimeEvent(new TimeEventRequest {
             GetGlobalPortal = new TimeEventRequest.Types.GetGlobalPortal(),

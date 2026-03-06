@@ -285,8 +285,7 @@ public class PartyHandler : FieldPacketHandler {
             return;
         }
 
-        if (session.Party.Party.LastVoteTime.FromEpochSeconds().AddSeconds(session.ServerTableMetadata.ConstantsTable.PartyVoteReadyDurationSeconds)
-            > DateTime.Now && session.Party.Party.Vote != null) {
+        if (session.Party.Party.LastVoteTime.FromEpochSeconds().AddSeconds(Constant.PartyVoteReadyDurationSeconds) > DateTime.Now && session.Party.Party.Vote != null) {
             session.Send(PartyPacket.Error(PartyError.s_party_err_already_vote));
             return;
         }
@@ -316,8 +315,7 @@ public class PartyHandler : FieldPacketHandler {
             return;
         }
 
-        if (session.Party.Party.LastVoteTime.FromEpochSeconds().AddSeconds(session.ServerTableMetadata.ConstantsTable.PartyVoteReadyDurationSeconds) >
-            DateTime.Now && session.Party.Party.Vote != null) {
+        if (session.Party.Party.LastVoteTime.FromEpochSeconds().AddSeconds(Constant.PartyVoteReadyDurationSeconds) > DateTime.Now && session.Party.Party.Vote != null) {
             session.Send(PartyPacket.Error(PartyError.s_party_err_already_vote));
             return;
         }

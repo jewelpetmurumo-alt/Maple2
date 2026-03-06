@@ -351,15 +351,15 @@ public class BeautyHandler : FieldPacketHandler {
     private void HandleWarp(GameSession session, IByteReader packet) {
         short type = packet.ReadShort();
         int mapId = type switch {
-            1 => session.ServerTableMetadata.ConstantsTable.BeautyHairShopGotoFieldID,
-            3 => session.ServerTableMetadata.ConstantsTable.BeautyFaceShopGotoFieldID,
-            5 => session.ServerTableMetadata.ConstantsTable.BeautyColorShopGotoFieldID,
+            1 => Constant.BeautyHairShopGotoFieldID,
+            3 => Constant.BeautyFaceShopGotoFieldID,
+            5 => Constant.BeautyColorShopGotoFieldID,
             _ => 0,
         };
         int portalId = type switch {
-            1 => session.ServerTableMetadata.ConstantsTable.BeautyHairShopGotoPortalID,
-            3 => session.ServerTableMetadata.ConstantsTable.BeautyFaceShopGotoPortalID,
-            5 => session.ServerTableMetadata.ConstantsTable.BeautyColorShopGotoPortalID,
+            1 => Constant.BeautyHairShopGotoPortalID,
+            3 => Constant.BeautyFaceShopGotoPortalID,
+            5 => Constant.BeautyColorShopGotoPortalID,
             _ => 0,
         };
 

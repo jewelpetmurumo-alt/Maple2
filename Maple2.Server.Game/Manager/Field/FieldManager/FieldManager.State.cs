@@ -153,9 +153,7 @@ public partial class FieldManager {
 
         AnimationMetadata? animation = NpcMetadata.GetAnimation(npc.Model.Name);
         string aiPath = disableAi ? string.Empty : npc.AiPath;
-        var fieldNpc = new FieldNpc(this, NextLocalId(), agent, new Npc(npc, animation, ServerTableMetadata.ConstantsTable.NpcLastingSightRadius,
-            ServerTableMetadata.ConstantsTable.NpcLastingSightHeightUp, ServerTableMetadata.ConstantsTable.NpcLastingSightHeightDown), aiPath,
-            patrolDataUUID: spawnPointNpc?.PatrolData, spawnAnimation: spawnAnimation) {
+        var fieldNpc = new FieldNpc(this, NextLocalId(), agent, new Npc(npc, animation), aiPath, patrolDataUUID: spawnPointNpc?.PatrolData, spawnAnimation: spawnAnimation) {
             Owner = owner,
             Position = spawnPosition,
             Rotation = rotation,
@@ -193,9 +191,7 @@ public partial class FieldManager {
         int objectId = player != null ? NextGlobalId() : NextLocalId();
         AnimationMetadata? animation = NpcMetadata.GetAnimation(npc.Model.Name);
 
-        var fieldPet = new FieldPet(this, objectId, agent, new Npc(npc, animation, ServerTableMetadata.ConstantsTable.NpcLastingSightRadius,
-            ServerTableMetadata.ConstantsTable.NpcLastingSightHeightUp,ServerTableMetadata.ConstantsTable.NpcLastingSightHeightDown),
-            pet, petMetadata, Constant.PetFieldAiPath, player) {
+        var fieldPet = new FieldPet(this, objectId, agent, new Npc(npc, animation), pet, petMetadata, Constant.PetFieldAiPath, player) {
             Owner = owner,
             Position = position,
             Rotation = rotation,
@@ -228,17 +224,15 @@ public partial class FieldManager {
     }
 
     public FieldPortal SpawnPortal(QuestSummonPortal metadata, FieldNpc npc, FieldPlayer owner) {
-        var portal = new Portal(NextLocalId(), metadata.MapId, metadata.PortalId, PortalType.Quest, PortalActionType.Interact,
-            npc.Position.Offset(owner.Session.ServerTableMetadata.ConstantsTable.QuestPortalDistanceFromNpc, npc.Rotation), npc.Rotation,
-            new Vector3(owner.Session.ServerTableMetadata.ConstantsTable.QuestPortalDistanceFromNpc, owner.Session.ServerTableMetadata.ConstantsTable.QuestPortalDimensionY,
-            owner.Session.ServerTableMetadata.ConstantsTable.QuestPortalDimensionZ), owner.Session.ServerTableMetadata.ConstantsTable.QuestPortalDistanceFromNpc,
+        var portal = new Portal(NextLocalId(), metadata.MapId, metadata.PortalId, PortalType.Quest, PortalActionType.Interact, npc.Position.Offset(Constant.QuestPortalDistanceFromNpc, npc.Rotation), npc.Rotation,
+            new Vector3(Constant.QuestPortalDistanceFromNpc, Constant.QuestPortalDimensionY, Constant.QuestPortalDimensionZ), Constant.QuestPortalDistanceFromNpc,
             0, true, false, true);
         var fieldPortal = new FieldQuestPortal(owner, this, NextLocalId(), portal) {
             Position = portal.Position,
             Rotation = portal.Rotation,
-            EndTick = (FieldTick + (long) TimeSpan.FromSeconds(owner.Session.ServerTableMetadata.ConstantsTable.QuestPortalKeepTime).TotalMilliseconds).Truncate32(),
+            EndTick = (FieldTick + (long) TimeSpan.FromSeconds(Constant.QuestPortalKeepTime).TotalMilliseconds).Truncate32(),
             StartTick = FieldTickInt,
-            Model = owner.Session.ServerTableMetadata.ConstantsTable.QuestPortalKeepNif,
+            Model = Constant.QuestPortalKeepNif,
         };
         fieldPortals[fieldPortal.ObjectId] = fieldPortal;
 
@@ -737,7 +731,7 @@ public partial class FieldManager {
     private void AddCubeSkill(SkillMetadata metadata, in Vector3 position, in Vector3 rotation = default) {
         Vector3 adjustedPosition = position;
         adjustedPosition.Z += FieldAccelerationStructure.BLOCK_SIZE;
-        var fieldSkill = new FieldSkill(this, NextLocalId(), FieldActor, metadata, (int)ServerTableMetadata.ConstantsTable.GlobalCubeSkillIntervalTime.TotalMilliseconds, adjustedPosition) {
+        var fieldSkill = new FieldSkill(this, NextLocalId(), FieldActor, metadata, (int) Constant.GlobalCubeSkillIntervalTime.TotalMilliseconds, adjustedPosition) {
             Position = adjustedPosition,
             Rotation = rotation,
             Source = SkillSource.Cube,

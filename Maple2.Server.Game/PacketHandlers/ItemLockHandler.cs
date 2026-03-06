@@ -86,7 +86,7 @@ public class ItemLockHandler : FieldPacketHandler {
 
                 if (unlock && item.IsLocked) {
                     item.IsLocked = false;
-                    item.UnlockTime = DateTimeOffset.UtcNow.AddSeconds(session.ServerTableMetadata.ConstantsTable.ItemUnLockTime).ToUnixTimeSeconds();
+                    item.UnlockTime = DateTimeOffset.UtcNow.AddSeconds(Constant.ItemUnLockTime).ToUnixTimeSeconds();
                     updatedItems.Add(item);
                 } else if (!unlock && !item.IsLocked) {
                     item.IsLocked = true;

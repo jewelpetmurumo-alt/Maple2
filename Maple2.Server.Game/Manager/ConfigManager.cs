@@ -27,8 +27,6 @@ public class ConfigManager {
     private readonly IList<long> favoriteDesigners;
     private readonly IDictionary<LapenshardSlot, int> lapenshards;
     private readonly IDictionary<int, SkillCooldown> skillCooldowns;
-    private readonly IDictionary<string, int> statLimits;
-
     public long DeathPenaltyEndTick {
         get => session.Player.Value.Character.DeathTick;
         private set => session.Player.Value.Character.DeathTick = value;
@@ -96,16 +94,7 @@ public class ConfigManager {
         skillPoints = load.SkillPoint ?? new SkillPoint();
         ExplorationProgress = load.ExplorationProgress;
 
-        statLimits = new Dictionary<string, int>() {
-            { "StatPointLimit_str", session.ServerTableMetadata.ConstantsTable.StatPointLimit_str },
-            { "StatPointLimit_dex", session.ServerTableMetadata.ConstantsTable.StatPointLimit_dex },
-            { "StatPointLimit_int", session.ServerTableMetadata.ConstantsTable.StatPointLimit_int },
-            { "StatPointLimit_luk", session.ServerTableMetadata.ConstantsTable.StatPointLimit_luk },
-            { "StatPointLimit_hp", session.ServerTableMetadata.ConstantsTable.StatPointLimit_hp },
-            { "StatPointLimit_cap", session.ServerTableMetadata.ConstantsTable.StatPointLimit_cap }
-        };
-
-        statAttributes = new StatAttributes(statLimits);
+        statAttributes = new StatAttributes();
         if (load.StatPoints != null) {
             foreach ((AttributePointSource source, int amount) in load.StatPoints) {
                 if (source == AttributePointSource.Prestige) {
@@ -336,7 +325,7 @@ public class ConfigManager {
     /// <param name="endTick">The tick when the penalty ends, or 0 to reset</param>
     public void UpdateDeathPenalty(long endTick) {
         // Skip penalty for low level players
-        if (session.Player.Value.Character.Level < session.ServerTableMetadata.ConstantsTable.UserRevivalPaneltyMinLevel) {
+        if (session.Player.Value.Character.Level < Constant.UserRevivalPaneltyMinLevel) {
             return;
         }
 
@@ -433,7 +422,7 @@ public class ConfigManager {
     #region StatPoints
     public void AllocateStatPoint(BasicAttribute type) {
         // Invalid stat type.
-        if (StatAttributes.PointAllocation.StatLimit(type, statLimits) <= 0) {
+        if (StatAttributes.PointAllocation.StatLimit(type) <= 0) {
             return;
         }
 
@@ -443,7 +432,7 @@ public class ConfigManager {
         }
 
         // Reached limit for allocation.
-        if (session.Config.statAttributes.Allocation[type] >= StatAttributes.PointAllocation.StatLimit(type, statLimits)) {
+        if (session.Config.statAttributes.Allocation[type] >= StatAttributes.PointAllocation.StatLimit(type)) {
             session.Send(NoticePacket.Message("s_char_info_limit_stat_point"));
             return;
         }

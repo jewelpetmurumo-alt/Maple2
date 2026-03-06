@@ -89,7 +89,7 @@ public sealed class ExperienceManager {
     }
 
     private long GetRestExp(long expGained) {
-        long addedRestExp = Math.Min(RestExp, (long) (expGained * (session.ServerTableMetadata.ConstantsTable.RestExpAcquireRate / 10000.0f))); // convert int to a percentage
+        long addedRestExp = Math.Min(RestExp, (long) (expGained * (Constant.RestExpAcquireRate / 10000.0f))); // convert int to a percentage
         RestExp = Math.Max(0, RestExp - addedRestExp);
         Exp += expGained;
         return addedRestExp;
@@ -175,7 +175,7 @@ public sealed class ExperienceManager {
 
     public bool LevelUp() {
         int startLevel = Level;
-        for (int level = startLevel; level < session.ServerTableMetadata.ConstantsTable.characterMaxLevel; level++) {
+        for (int level = startLevel; level < Constant.characterMaxLevel; level++) {
             if (!session.TableMetadata.ExpTable.NextExp.TryGetValue(level, out long expToNextLevel) || expToNextLevel > Exp) {
                 break;
             }
@@ -203,7 +203,7 @@ public sealed class ExperienceManager {
     }
 
     private void AddPrestigeExp(ExpType expType) {
-        if (Level < session.ServerTableMetadata.ConstantsTable.AdventureLevelStartLevel) {
+        if (Level < Constant.AdventureLevelStartLevel) {
             return;
         }
 
@@ -211,20 +211,19 @@ public sealed class ExperienceManager {
             return;
         }
 
-        if (PrestigeCurrentExp - PrestigeExp + (PrestigeLevelsGained * session.ServerTableMetadata.ConstantsTable.AdventureLevelLvUpExp) >=
-            session.ServerTableMetadata.ConstantsTable.AdventureLevelLvUpExp) {
-            amount = (long) (amount * session.ServerTableMetadata.ConstantsTable.AdventureLevelFactor);
+        if (PrestigeCurrentExp - PrestigeExp + (PrestigeLevelsGained * Constant.AdventureLevelLvUpExp) >= Constant.AdventureLevelLvUpExp) {
+            amount = (long) (amount * Constant.AdventureLevelFactor);
         }
 
         PrestigeCurrentExp = Math.Min(amount + PrestigeCurrentExp, long.MaxValue);
 
         int startLevel = PrestigeLevel;
-        for (int level = startLevel; level < session.ServerTableMetadata.ConstantsTable.AdventureLevelLimit; level++) {
-            if (session.ServerTableMetadata.ConstantsTable.AdventureLevelLvUpExp > PrestigeCurrentExp) {
+        for (int level = startLevel; level < Constant.AdventureLevelLimit; level++) {
+            if (Constant.AdventureLevelLvUpExp > PrestigeCurrentExp) {
                 break;
             }
 
-            PrestigeCurrentExp -= session.ServerTableMetadata.ConstantsTable.AdventureLevelLvUpExp;
+            PrestigeCurrentExp -= Constant.AdventureLevelLvUpExp;
             PrestigeLevel++;
         }
         session.Send(PrestigePacket.AddExp(PrestigeCurrentExp, amount));
@@ -234,7 +233,7 @@ public sealed class ExperienceManager {
     }
 
     public void PrestigeLevelUp(int amount = 1) {
-        PrestigeLevel = Math.Clamp(PrestigeLevel + amount, amount, session.ServerTableMetadata.ConstantsTable.AdventureLevelLimit);
+        PrestigeLevel = Math.Clamp(PrestigeLevel + amount, amount, Constant.AdventureLevelLimit);
         PrestigeLevelsGained += amount;
         session.ConditionUpdate(ConditionType.adventure_level, counter: amount);
         session.ConditionUpdate(ConditionType.adventure_level_up, counter: amount);
@@ -243,7 +242,7 @@ public sealed class ExperienceManager {
         }
 
         for (int i = 0; i < amount; i++) {
-            Item? item = session.Field?.ItemDrop.CreateItem(session.ServerTableMetadata.ConstantsTable.AdventureLevelLvUpRewardItem);
+            Item? item = session.Field?.ItemDrop.CreateItem(Constant.AdventureLevelLvUpRewardItem);
             if (item == null) {
                 break;
             }

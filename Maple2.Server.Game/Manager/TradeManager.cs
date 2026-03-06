@@ -34,7 +34,7 @@ public class TradeManager : IDisposable {
         // End the trade if not accepted before |TradeRequestDuration|.
         string receiverName = receiver.Player.Value.Character.Name;
         Task.Factory.StartNew(() => {
-            Thread.Sleep(TimeSpan.FromSeconds(sender.ServerTableMetadata.ConstantsTable.TradeRequestDuration));
+            Thread.Sleep(TimeSpan.FromSeconds(Constant.TradeRequestDuration));
             lock (mutex) {
                 if (state is not (TradeState.Requested or TradeState.Acknowledged)) {
                     return;
@@ -168,7 +168,7 @@ public class TradeManager : IDisposable {
             return;
         }
 
-        if (amount > caller.ServerTableMetadata.ConstantsTable.TradeMaxMeso) {
+        if (amount > Constant.TradeMaxMeso) {
             caller.Send(TradePacket.Error(s_trade_error_invalid_meso));
             return;
         }
@@ -247,7 +247,7 @@ public class TradeManager : IDisposable {
         }
 
         lock (sender.Session.Item) {
-            long fee = success ? (long) (sender.Session.ServerTableMetadata.ConstantsTable.TradeFeePercent / 100f * sender.Mesos) : 0;
+            long fee = success ? (long) (Constant.TradeFeePercent / 100f * sender.Mesos) : 0;
             sender.Session.Currency.Meso += sender.Mesos - fee;
             foreach (Item item in sender.Items) {
                 if (item.Transfer?.Flag.HasFlag(TransferFlag.LimitTrade) == true) {
@@ -260,7 +260,7 @@ public class TradeManager : IDisposable {
             sender.Clear();
         }
         lock (receiver.Session.Item) {
-            long fee = success ? (long) (receiver.Session.ServerTableMetadata.ConstantsTable.TradeFeePercent / 100f * receiver.Mesos) : 0;
+            long fee = success ? (long) (Constant.TradeFeePercent / 100f * receiver.Mesos) : 0;
             receiver.Session.Currency.Meso += receiver.Mesos - fee;
             foreach (Item item in receiver.Items) {
                 if (item.Transfer?.Flag.HasFlag(TransferFlag.LimitTrade) == true) {

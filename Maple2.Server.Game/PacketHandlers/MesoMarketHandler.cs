@@ -59,7 +59,7 @@ public class MesoMarketHandler : FieldPacketHandler {
         long amount = packet.ReadLong();
         long price = packet.ReadLong();
 
-        if (amount != session.ServerTableMetadata.ConstantsTable.MesoMarketBasePrice) {
+        if (amount != Constant.MesoMarketBasePrice) {
             session.Send(MesoMarketPacket.Error(s_mesoMarket_error_invalidSaleMoney));
             return;
         }
@@ -96,7 +96,7 @@ public class MesoMarketHandler : FieldPacketHandler {
         }
 
         session.Player.Value.Account.MesoMarketListed++;
-        session.Currency.Meso -= session.ServerTableMetadata.ConstantsTable.MesoMarketBasePrice;
+        session.Currency.Meso -= Constant.MesoMarketBasePrice;
         session.Send(MesoMarketPacket.Create(listing));
         session.Send(MesoMarketPacket.Quota(session.Player.Value.Account.MesoMarketListed, session.Player.Value.Account.MesoMarketPurchased));
     }

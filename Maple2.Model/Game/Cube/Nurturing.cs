@@ -48,20 +48,20 @@ public class Nurturing : IByteSerializable {
         }
     }
 
-    public void Feed(int nurturingEatGrowth) {
+    public void Feed() {
         if (Exp >= NurturingMetadata.RequiredGrowth.Last().Exp) {
             return;
         }
 
-        Exp += nurturingEatGrowth;
+        Exp += Constant.NurturingEatGrowth;
         if (Exp >= NurturingMetadata.RequiredGrowth.First(x => x.Stage == Stage).Exp) {
             Stage++;
         }
         LastFeedTime = DateTimeOffset.Now;
     }
 
-    public bool Play(long accountId, int nurturingEatGrowth, int nurturingPlayMaxCount) {
-        if (PlayedBy.Count >= nurturingPlayMaxCount) {
+    public bool Play(long accountId) {
+        if (PlayedBy.Count >= Constant.NurturingPlayMaxCount) {
             return false;
         }
 
@@ -70,7 +70,7 @@ public class Nurturing : IByteSerializable {
         }
 
         PlayedBy.Add(accountId);
-        Feed(nurturingEatGrowth);
+        Feed();
         return true;
     }
 

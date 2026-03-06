@@ -17,7 +17,6 @@ public class FunctionCubeHandler : FieldPacketHandler {
     #region Autofac Autowired
     // ReSharper disable MemberCanBePrivate.Global
     public required FunctionCubeMetadataStorage FunctionCubeMetadataStorage { private get; init; }
-    public required ServerTableMetadataStorage ServerTableMetadataStorage { private get; init; }
     // ReSharper restore All
     #endregion
 
@@ -149,7 +148,7 @@ public class FunctionCubeHandler : FieldPacketHandler {
 
         // drop the item
         session.Field.DropItem(fieldCube.Position, fieldCube.Rotation, rewardItem, owner: session.Player, characterId: session.CharacterId);
-        nurturing.Feed(ServerTableMetadataStorage.ConstantsTable.NurturingEatGrowth);
+        nurturing.Feed();
         db.UpdateNurturing(session.AccountId, fieldCube.InteractCube);
 
         session.Field.Broadcast(FunctionCubePacket.UpdateFunctionCube(fieldCube.InteractCube));
@@ -164,12 +163,12 @@ public class FunctionCubeHandler : FieldPacketHandler {
             return;
         }
 
-        if (db.CountNurturingForAccount(cube.InteractCube.Metadata.Id, session.AccountId) >= ServerTableMetadataStorage.ConstantsTable.NurturingEatMaxCount) {
+        if (db.CountNurturingForAccount(cube.InteractCube.Metadata.Id, session.AccountId) >= Constant.NurturingPlayMaxCount) {
             session.Send(NoticePacket.Message("You have already played with the maximum number of pets today. TODO: Find correct string id")); // TODO: Find correct string id
             return;
         }
 
-        if (!nurturing.Play(session.AccountId, ServerTableMetadataStorage.ConstantsTable.NurturingEatGrowth, ServerTableMetadataStorage.ConstantsTable.NurturingEatMaxCount)) {
+        if (!nurturing.Play(session.AccountId)) {
             return;
         }
 
@@ -217,7 +216,7 @@ public class FunctionCubeHandler : FieldPacketHandler {
             return null;
         }
 
-        var mail = new Mail(ServerTableMetadataStorage.ConstantsTable.MailExpiryDays) {
+        var mail = new Mail {
             ReceiverId = ownerId,
             Type = MailType.System,
             Content = contentId,

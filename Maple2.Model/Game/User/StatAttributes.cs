@@ -13,9 +13,9 @@ public class StatAttributes : IByteSerializable {
     public int TotalPoints => Sources.Count;
     public int UsedPoints => Allocation.Count;
 
-    public StatAttributes(IDictionary<string, int> statLimits) {
+    public StatAttributes() {
         Sources = new PointSources();
-        Allocation = new PointAllocation(statLimits);
+        Allocation = new PointAllocation();
     }
 
     public void WriteTo(IByteWriter writer) {
@@ -52,7 +52,6 @@ public class StatAttributes : IByteSerializable {
 
     public class PointAllocation : IByteSerializable {
         private readonly Dictionary<BasicAttribute, int> points;
-        private readonly IDictionary<string, int> statLimits;
 
         public BasicAttribute[] Attributes => points.Keys.ToArray();
         public int Count => points.Values.Sum();
@@ -60,7 +59,7 @@ public class StatAttributes : IByteSerializable {
         public int this[BasicAttribute type] {
             get => points.GetValueOrDefault(type);
             set {
-                if (value < 0 || value > StatLimit(type, statLimits)) {
+                if (value < 0 || value > StatLimit(type)) {
                     return;
                 }
                 if (value == 0) {
@@ -72,20 +71,19 @@ public class StatAttributes : IByteSerializable {
             }
         }
 
-        public PointAllocation(IDictionary<string, int> statLimits) {
+        public PointAllocation() {
             points = new Dictionary<BasicAttribute, int>();
-            this.statLimits = statLimits;
         }
 
-        public static int StatLimit(BasicAttribute type, IDictionary<string, int> statLimits) {
+        public static int StatLimit(BasicAttribute type) {
             return type switch {
-                BasicAttribute.Strength => statLimits.GetValueOrDefault("StatPointLimit_str"),
-                BasicAttribute.Dexterity => statLimits.GetValueOrDefault("StatPointLimit_dex"),
-                BasicAttribute.Intelligence => statLimits.GetValueOrDefault("StatPointLimit_int"),
-                BasicAttribute.Luck => statLimits.GetValueOrDefault("StatPointLimit_luk"),
-                BasicAttribute.Health => statLimits.GetValueOrDefault("StatPointLimit_hp"),
-                BasicAttribute.CriticalRate => statLimits.GetValueOrDefault("StatPointLimit_cap"),
-                _ => 0
+                BasicAttribute.Strength => Constant.StatPointLimit_str,
+                BasicAttribute.Dexterity => Constant.StatPointLimit_dex,
+                BasicAttribute.Intelligence => Constant.StatPointLimit_int,
+                BasicAttribute.Luck => Constant.StatPointLimit_luk,
+                BasicAttribute.Health => Constant.StatPointLimit_hp,
+                BasicAttribute.CriticalRate => Constant.StatPointLimit_cap,
+                _ => 0,
             };
         }
 

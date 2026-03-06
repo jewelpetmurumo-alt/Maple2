@@ -239,12 +239,12 @@ public class FishingManager {
 
         selectedFish = fishes.Get();
 
-        int fishingTick = session.ServerTableMetadata.ConstantsTable.fisherBoreDuration;
+        int fishingTick = Constant.FisherBoreDuration;
         bool hasAutoFish = session.Player.Buffs.HasBuff(BuffEventType.AutoFish);
 
         // Fishing Success
         if (Random.Shared.Next(0, 10000) < selectedFish.BaitProbability) {
-            if (!hasAutoFish && Random.Shared.Next(0, 10000) < session.ServerTableMetadata.ConstantsTable.fishFightingProp) {
+            if (!hasAutoFish && Random.Shared.Next(0, 10000) < Constant.FishFightingProp) {
                 fishFightGame = true;
             }
 

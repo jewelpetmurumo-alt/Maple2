@@ -63,7 +63,7 @@ public sealed class BlackMarketManager {
             AccountId = session.AccountId,
             CharacterId = session.CharacterId,
             Deposit = depositFee,
-            ExpiryTime = DateTime.Now.AddDays(session.ServerTableMetadata.ConstantsTable.BlackMarketSellEndDay).ToEpochSeconds(),
+            ExpiryTime = DateTime.Now.AddDays(Constant.BlackMarketSellEndDay).ToEpochSeconds(),
             Price = price,
             Quantity = quantity,
         };

@@ -193,7 +193,7 @@ public class GuildHandler : PacketHandler<GameSession> {
             session.Send(GuildPacket.Error(GuildError.s_guild_err_name_value));
             return;
         }
-        if (guildName.Length < session.ServerTableMetadata.ConstantsTable.GuildNameLengthMin || guildName.Length > session.ServerTableMetadata.ConstantsTable.GuildNameLengthMax) {
+        if (guildName.Length is < Constant.GuildNameLengthMin or > Constant.GuildNameLengthMax) {
             session.Send(GuildPacket.Error(GuildError.s_guild_err_name_value));
             return;
         }
@@ -208,11 +208,11 @@ public class GuildHandler : PacketHandler<GameSession> {
             return;
         }
 
-        if (session.Player.Value.Character.Level < session.ServerTableMetadata.ConstantsTable.GuildCreateMinLevel) {
+        if (session.Player.Value.Character.Level < Constant.GuildCreateMinLevel) {
             session.Send(GuildPacket.Error(GuildError.s_guild_err_not_enough_level));
             return;
         }
-        if (session.Currency.CanAddMeso(-session.ServerTableMetadata.ConstantsTable.GuildCreatePrice) != -session.ServerTableMetadata.ConstantsTable.GuildCreatePrice) {
+        if (session.Currency.CanAddMeso(-Constant.GuildCreatePrice) != -Constant.GuildCreatePrice) {
             session.Send(GuildPacket.Error(GuildError.s_guild_err_no_money));
             return;
         }
@@ -236,7 +236,7 @@ public class GuildHandler : PacketHandler<GameSession> {
             }
 
             session.Guild.SetGuild(response.Guild);
-            session.Currency.Meso -= session.ServerTableMetadata.ConstantsTable.GuildCreatePrice;
+            session.Currency.Meso -= Constant.GuildCreatePrice;
 
             session.Guild.Load();
             session.Send(GuildPacket.Created(guildName));
