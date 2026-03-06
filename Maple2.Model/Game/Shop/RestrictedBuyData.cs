@@ -49,11 +49,9 @@ public readonly struct BuyTimeOfDay {
     public int EndTimeOfDay { get; } // time end in seconds. ex 10600 = 2:56 AM
 
     [JsonConstructor]
-    // System.Text.Json requires every parameter on the [JsonConstructor] to bind to a
-    // property/field on the type. Parameter names must match property names (case-insensitive).
-    public BuyTimeOfDay(int startTimeOfDay, int endTimeOfDay) {
-        StartTimeOfDay = startTimeOfDay;
-        EndTimeOfDay = endTimeOfDay;
+    public BuyTimeOfDay(int startTime, int endTime) {
+        StartTimeOfDay = startTime;
+        EndTimeOfDay = endTime;
     }
 
     public BuyTimeOfDay Clone() {
