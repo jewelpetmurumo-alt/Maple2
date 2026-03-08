@@ -191,15 +191,90 @@ public partial class FieldManager {
         int objectId = player != null ? NextGlobalId() : NextLocalId();
         AnimationMetadata? animation = NpcMetadata.GetAnimation(npc.Model.Name);
 
-        var fieldPet = new FieldPet(this, objectId, agent, new Npc(npc, animation), pet, petMetadata, Constant.PetFieldAiPath, player) {
+        string aiPath = Constant.PetFieldAiPath;
+        if (player != null) {
+            string customBattleAiPath = $"Pet/AI_{pet.Id}.xml";
+            aiPath = AiMetadata.TryGet(customBattleAiPath, out _) ? customBattleAiPath : "Pet/AI_DefaultPetBattle.xml";
+        }
+
+        var fieldPet = new FieldPet(this, objectId, agent, new Npc(npc, animation), pet, petMetadata, aiPath, player) {
             Owner = owner,
             Position = position,
             Rotation = rotation,
             Origin = owner?.Position ?? position,
         };
+        if (player != null) {
+            ApplyOwnedPetCombatStats(fieldPet);
+        }
+
         Pets[fieldPet.ObjectId] = fieldPet;
 
         return fieldPet;
+    }
+
+    private static void ApplyOwnedPetCombatStats(FieldPet fieldPet) {
+        Stats stats = fieldPet.Stats.Values;
+        Item petItem = fieldPet.Pet;
+        int petLevel = Math.Max(1, (int) (petItem.Pet?.Level ?? (short) 1));
+        int petRarity = Math.Max(1, petItem.Rarity);
+
+        double levelScale = 1d + ((petLevel - 1) * 0.08d);
+        double rarityScale = 1d + ((petRarity - 1) * 0.18d);
+        double combinedScale = Math.Max(1d, levelScale * rarityScale);
+
+        BoostBase(BasicAttribute.PhysicalAtk, 0.90d);
+        BoostBase(BasicAttribute.MagicalAtk, 0.90d);
+        BoostBase(BasicAttribute.MinWeaponAtk, 0.90d);
+        BoostBase(BasicAttribute.MaxWeaponAtk, 0.90d);
+        BoostBase(BasicAttribute.Accuracy, 0.35d);
+        BoostBase(BasicAttribute.CriticalRate, 0.30d);
+        BoostBase(BasicAttribute.Defense, 0.35d);
+        BoostBase(BasicAttribute.PhysicalRes, 0.35d);
+        BoostBase(BasicAttribute.MagicalRes, 0.35d);
+        BoostBase(BasicAttribute.Health, 0.75d);
+
+        if (petItem.Stats != null) {
+            foreach (ItemStats.Type type in Enum.GetValues<ItemStats.Type>()) {
+                ApplyPetItemOption(stats, petItem.Stats[type]);
+            }
+        }
+
+        stats.Total();
+
+        if (stats[BasicAttribute.MinWeaponAtk].Total <= 0) {
+            long fallbackWeapon = Math.Max(1L, (long) Math.Round(Math.Max(stats[BasicAttribute.PhysicalAtk].Total, stats[BasicAttribute.MagicalAtk].Total) * 0.4d));
+            stats[BasicAttribute.MinWeaponAtk].AddTotal(fallbackWeapon);
+        }
+
+        if (stats[BasicAttribute.MaxWeaponAtk].Total <= stats[BasicAttribute.MinWeaponAtk].Total) {
+            long fallbackSpread = Math.Max(1L, (long) Math.Round(Math.Max(stats[BasicAttribute.PhysicalAtk].Total, stats[BasicAttribute.MagicalAtk].Total) * 0.2d));
+            stats[BasicAttribute.MaxWeaponAtk].AddTotal(stats[BasicAttribute.MinWeaponAtk].Total + fallbackSpread - stats[BasicAttribute.MaxWeaponAtk].Total);
+        }
+
+        stats[BasicAttribute.Health].Current = stats[BasicAttribute.Health].Total;
+        return;
+
+        void BoostBase(BasicAttribute attribute, double factor) {
+            long baseValue = stats[attribute].Base;
+            if (baseValue <= 0) {
+                return;
+            }
+
+            long bonus = (long) Math.Round(baseValue * (combinedScale - 1d) * factor);
+            if (bonus > 0) {
+                stats[attribute].AddTotal(bonus);
+            }
+        }
+    }
+
+    private static void ApplyPetItemOption(Stats stats, ItemStats.Option option) {
+        foreach ((BasicAttribute attribute, BasicOption value) in option.Basic) {
+            stats[attribute].AddTotal(value);
+        }
+
+        foreach ((SpecialAttribute attribute, SpecialOption value) in option.Special) {
+            stats[attribute].AddTotal(value);
+        }
     }
 
     public FieldPortal SpawnPortal(Portal portal, Vector3 position = default, Vector3 rotation = default) {

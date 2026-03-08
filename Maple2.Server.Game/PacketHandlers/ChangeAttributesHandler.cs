@@ -204,10 +204,14 @@ public class ChangeAttributesHandler : FieldPacketHandler {
 
     // It needs to be epic or better armor and accessories at level 50 and above.
     private static bool IsValidItem(Item item) {
+        if (item.Type.IsCombatPet) {
+            return item.Rarity is >= 1 and <= Constant.ChangeAttributesMaxRarity;
+        }
+
         if (item.Rarity is < Constant.ChangeAttributesMinRarity or > Constant.ChangeAttributesMaxRarity) {
             return false;
         }
-        if (!item.Type.IsWeapon && !item.Type.IsArmor && !item.Type.IsAccessory && !item.Type.IsCombatPet) {
+        if (!item.Type.IsWeapon && !item.Type.IsArmor && !item.Type.IsAccessory) {
             return false;
         }
         if (item.Metadata.Limit.Level < Constant.ChangeAttributesMinLevel) {

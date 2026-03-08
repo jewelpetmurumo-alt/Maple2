@@ -128,11 +128,22 @@ public static class PetPacket {
         var pWriter = Packet.Of(SendOp.ResponsePet);
         pWriter.Write<Command>(Command.Fusion);
         pWriter.WriteInt(pet.OwnerId);
-        pWriter.WriteLong(pet.Pet.Pet?.Exp ?? 0);
+        pWriter.WriteLong(GetFusionDisplayExp(pet.Pet.Pet?.Exp ?? 0));
         pWriter.WriteLong(pet.Pet.Uid);
 
         return pWriter;
     }
+
+    public static ByteWriter Fusion(int ownerId, Item pet) {
+        var pWriter = Packet.Of(SendOp.ResponsePet);
+        pWriter.Write<Command>(Command.Fusion);
+        pWriter.WriteInt(ownerId);
+        pWriter.WriteLong(GetFusionDisplayExp(pet.Pet?.Exp ?? 0));
+        pWriter.WriteLong(pet.Uid);
+
+        return pWriter;
+    }
+
 
     public static ByteWriter LevelUp(FieldPet pet) {
         var pWriter = Packet.Of(SendOp.ResponsePet);
@@ -142,6 +153,24 @@ public static class PetPacket {
         pWriter.WriteLong(pet.Pet.Uid);
 
         return pWriter;
+    }
+    public static ByteWriter LevelUp(int ownerId, Item pet) {
+        var pWriter = Packet.Of(SendOp.ResponsePet);
+        pWriter.Write<Command>(Command.LevelUp);
+        pWriter.WriteInt(ownerId);
+        pWriter.WriteInt(pet.Pet?.Level ?? 1);
+        pWriter.WriteLong(pet.Uid);
+
+        return pWriter;
+    }
+
+
+
+    private static long GetFusionDisplayExp(long exp) {
+        // The compose UI appears to interpret the fusion progress value at half scale.
+        // Send doubled display progress here so the immediate fusion bar matches the
+        // actual persisted pet EXP shown after reloading pet info.
+        return Math.Max(0L, exp * 2L);
     }
 
     public static ByteWriter FusionCount(int count) {

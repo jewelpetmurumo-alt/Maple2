@@ -1,4 +1,4 @@
-﻿using Maple2.Model.Enum;
+using Maple2.Model.Enum;
 using Maple2.Model.Metadata;
 using Maple2.Server.Core.Formulas;
 using Maple2.Server.Game.Model;
@@ -27,6 +27,10 @@ public static class DamageCalculator {
 
         var damageType = DamageType.Normal;
         (double minBonusAtkDamage, double maxBonusAtkDamage) = caster.Stats.GetBonusAttack(target.Buffs.GetResistance(BasicAttribute.BonusAtk), target.Buffs.GetResistance(BasicAttribute.MaxWeaponAtk));
+        if (caster is FieldPet { OwnerId: > 0 } ownedPet) {
+            (minBonusAtkDamage, maxBonusAtkDamage) = GetOwnedPetAttackRange(ownedPet);
+        }
+
         double attackDamage = minBonusAtkDamage + (maxBonusAtkDamage - minBonusAtkDamage) * double.Lerp(Random.Shared.NextDouble(), Random.Shared.NextDouble(), Random.Shared.NextDouble());
 
         // change the NPCNormalDamage to be changed depending on target?
@@ -97,6 +101,7 @@ public static class DamageCalculator {
         double attackTypeAmount = 0;
         double resistance = 0;
         double finalDamage = 0;
+        FieldPet? ownedPetCaster = caster as FieldPet;
         switch (property.AttackType) {
             case AttackType.Physical:
                 resistance = Damage.CalculateResistance(target.Stats.Values[BasicAttribute.PhysicalRes].Total, caster.Stats.Values[SpecialAttribute.PhysicalPiercing].Multiplier());
@@ -128,6 +133,10 @@ public static class DamageCalculator {
                 break;
         }
 
+        if (ownedPetCaster is { OwnerId: > 0 }) {
+            attackTypeAmount = Math.Max(attackTypeAmount, GetOwnedPetAttackFactor(ownedPetCaster));
+        }
+
         damageMultiplier *= attackTypeAmount * resistance * (finalDamage == 0 ? 1 : finalDamage);
         attackDamage *= damageMultiplier * Constant.AttackDamageFactor + property.Value;
 
@@ -145,5 +154,60 @@ public static class DamageCalculator {
         }
 
         return (damageType, (long) Math.Max(1, attackDamage));
+    }
+
+    private static double GetOwnedPetAttackFactor(FieldPet pet) {
+        long physicalAtk = pet.Stats.Values[BasicAttribute.PhysicalAtk].Total;
+        long magicalAtk = pet.Stats.Values[BasicAttribute.MagicalAtk].Total;
+        long minWeaponAtk = pet.Stats.Values[BasicAttribute.MinWeaponAtk].Total;
+        long maxWeaponAtk = pet.Stats.Values[BasicAttribute.MaxWeaponAtk].Total;
+        double petBonusAtk = GetTotalPetBonusAttack(pet);
+
+        double directAtk = Math.Max(physicalAtk, magicalAtk);
+        double weaponAtk = Math.Max(minWeaponAtk, maxWeaponAtk);
+        double bonusDrivenAtk = petBonusAtk > 0 ? petBonusAtk * 4.96d : 0d;
+
+        double factor = Math.Max(directAtk, weaponAtk);
+        factor = Math.Max(factor, bonusDrivenAtk);
+
+        if (petBonusAtk > 0) {
+            factor += petBonusAtk * 1.50d;
+        }
+
+        return Math.Max(1d, factor);
+    }
+
+    private static (double Min, double Max) GetOwnedPetAttackRange(FieldPet pet) {
+        long minWeaponAtk = pet.Stats.Values[BasicAttribute.MinWeaponAtk].Total;
+        long maxWeaponAtk = pet.Stats.Values[BasicAttribute.MaxWeaponAtk].Total;
+        long physicalAtk = pet.Stats.Values[BasicAttribute.PhysicalAtk].Total;
+        long magicalAtk = pet.Stats.Values[BasicAttribute.MagicalAtk].Total;
+        double petBonusAtk = GetTotalPetBonusAttack(pet);
+
+        double attackBase = Math.Max(physicalAtk, magicalAtk);
+        if (attackBase <= 0) {
+            attackBase = Math.Max(minWeaponAtk, maxWeaponAtk);
+        }
+
+        double bonusDrivenAtk = petBonusAtk > 0 ? petBonusAtk * 4.96d : 0d;
+        attackBase = Math.Max(attackBase, bonusDrivenAtk);
+
+        if (attackBase <= 0) {
+            attackBase = 100d;
+        }
+
+        double min = Math.Max(1d, minWeaponAtk > 0 ? Math.Max(minWeaponAtk, attackBase * 0.65d) : attackBase * 0.65d);
+        double max = Math.Max(min + 1d, maxWeaponAtk > 0 ? Math.Max(maxWeaponAtk, attackBase * 0.95d) : attackBase * 0.95d);
+        return (min, max);
+    }
+
+    private static double GetTotalPetBonusAttack(FieldPet pet) {
+        double petBonusAtk = pet.Stats.Values[BasicAttribute.PetBonusAtk].Total + pet.Stats.Values[BasicAttribute.BonusAtk].Total;
+
+        if (pet.Field.Players.TryGetValue(pet.OwnerId, out FieldPlayer? owner)) {
+            petBonusAtk += owner.Stats.Values[BasicAttribute.PetBonusAtk].Total;
+        }
+
+        return Math.Max(0d, petBonusAtk);
     }
 }

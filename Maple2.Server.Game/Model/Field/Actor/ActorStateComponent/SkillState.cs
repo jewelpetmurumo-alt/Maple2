@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using Maple2.Model.Metadata;
 using Maple2.Server.Game.Model.Skill;
 using Maple2.Server.Game.Packets;
@@ -74,13 +74,23 @@ public class SkillState {
 
         }
 
-        // Apply damage to targets server-side for NPC attacks
-        // Always use the attack range prism to resolve targets so spatial checks are respected
-        Tools.Collision.Prism attackPrism = attack.Range.GetPrism(actor.Position, actor.Rotation.Z);
+        // Apply damage to targets server-side for NPC attacks.
+        // For player-owned combat pets, prefer the current battle target directly.
+        // Many pet skills are authored with client-side target metadata that does not
+        // line up with our generic NPC target query, which can cause the owner/player
+        // to be selected instead of the hostile mob.
         var resolvedTargets = new List<IActor>();
         int queryLimit = attack.TargetCount > 0 ? attack.TargetCount : 1;
-        foreach (IActor target in actor.Field.GetTargets(actor, [attackPrism], attack.Range, queryLimit)) {
-            resolvedTargets.Add(target);
+
+        if (actor is FieldPet { OwnerId: > 0 } ownedPet && ownedPet.BattleState.Target is FieldNpc hostileTarget && !hostileTarget.IsDead) {
+            resolvedTargets.Add(hostileTarget);
+        }
+
+        if (resolvedTargets.Count == 0) {
+            Tools.Collision.Prism attackPrism = attack.Range.GetPrism(actor.Position, actor.Rotation.Z);
+            foreach (IActor target in actor.Field.GetTargets(actor, [attackPrism], attack.Range, queryLimit)) {
+                resolvedTargets.Add(target);
+            }
         }
 
         if (resolvedTargets.Count > 0) {

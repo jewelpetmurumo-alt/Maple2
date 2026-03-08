@@ -202,6 +202,8 @@ public class BattleState {
             target = targetPlayer;
         } else if (actor.Field.Npcs.TryGetValue(TargetId, out FieldNpc? targetNpc)) {
             target = targetNpc;
+        } else if (actor.Field.Mobs.TryGetValue(TargetId, out FieldNpc? targetMob)) {
+            target = targetMob;
         }
 
 
@@ -214,6 +216,10 @@ public class BattleState {
 
     private int GetTargetType() {
         int friendlyType = actor.Value.Metadata.Basic.Friendly;
+
+        if (actor is FieldPet { OwnerId: > 0 }) {
+            friendlyType = 1;
+        }
 
         if (friendlyType != 2 && TargetNode is not null && TargetType == NodeTargetType.HasAdditional) {
             friendlyType = TargetNode.Target switch {
@@ -251,6 +257,12 @@ public class BattleState {
         }
 
         if (friendlyType == 1) {
+            foreach (FieldNpc npc in actor.Field.Mobs.Values) {
+                if (ShouldTargetActor(npc, sightSquared, sightHeightUp, sightHeightDown, ref nextTargetDistance, candidates)) {
+                    nextTarget = npc;
+                }
+            }
+
             foreach (FieldNpc npc in actor.Field.Npcs.Values) {
                 if (npc.Value.Metadata.Basic.Friendly != 0) {
                     continue;

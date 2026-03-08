@@ -138,6 +138,7 @@ public class StatsManager {
 
         AddEquips(player);
         AddBuffs(player);
+        player.Session.Config.ReapplyAllocatedStats();
         Values.Total();
         StatConversion(player);
         // Stat rebuild via AddBase/AddTotal restores Current to Total,

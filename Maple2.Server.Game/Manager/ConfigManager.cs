@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Maple2.Database.Extensions;
 using Maple2.Database.Storage;
+using Maple2.Model;
 using Maple2.Model.Enum;
 using Maple2.Model.Game;
 using Maple2.Model.Metadata;
@@ -453,25 +454,88 @@ public class ConfigManager {
         session.Send(NoticePacket.Message("s_char_info_reset_stat_pointsuccess_msg"));
     }
 
+    public void ReapplyAllocatedStats(bool send = false) {
+        foreach (BasicAttribute type in statAttributes.Allocation.Attributes) {
+            int points = statAttributes.Allocation[type];
+            if (points <= 0) {
+                continue;
+            }
+
+            UpdateStatAttribute(type, points, send);
+        }
+    }
+
     private void UpdateStatAttribute(BasicAttribute type, int points, bool send = true) {
+        var values = session.Player.Stats.Values;
+        long oldStr = values[BasicAttribute.Strength].Total;
+        long oldDex = values[BasicAttribute.Dexterity].Total;
+        long oldInt = values[BasicAttribute.Intelligence].Total;
+        long oldLuk = values[BasicAttribute.Luck].Total;
+        JobCode jobCode = session.Player.Value.Character.Job.Code();
+
         switch (type) {
             case BasicAttribute.Strength:
             case BasicAttribute.Dexterity:
             case BasicAttribute.Intelligence:
             case BasicAttribute.Luck:
-                session.Player.Stats.Values[type].AddTotal(1 * points);
+                values[type].AddTotal(points);
                 break;
             case BasicAttribute.Health:
-                session.Player.Stats.Values[BasicAttribute.Health].AddTotal(10 * points);
+                values[BasicAttribute.Health].AddTotal(10L * points);
                 break;
             case BasicAttribute.CriticalRate:
-                session.Player.Stats.Values[BasicAttribute.CriticalRate].AddTotal(3 * points);
+                values[BasicAttribute.CriticalRate].AddTotal(3L * points);
                 break;
         }
 
-        // Sends packet to notify client, skipped during loading.
+        long newStr = values[BasicAttribute.Strength].Total;
+        long newDex = values[BasicAttribute.Dexterity].Total;
+        long newInt = values[BasicAttribute.Intelligence].Total;
+        long newLuk = values[BasicAttribute.Luck].Total;
+
+        long oldPhysicalAtk = Maple2.Server.Core.Formulas.AttackStat.PhysicalAtk(jobCode, oldStr, oldDex, oldLuk);
+        long newPhysicalAtk = Maple2.Server.Core.Formulas.AttackStat.PhysicalAtk(jobCode, newStr, newDex, newLuk);
+        long oldMagicalAtk = Maple2.Server.Core.Formulas.AttackStat.MagicalAtk(jobCode, oldInt);
+        long newMagicalAtk = Maple2.Server.Core.Formulas.AttackStat.MagicalAtk(jobCode, newInt);
+
+        long physicalAtkDelta = newPhysicalAtk - oldPhysicalAtk;
+        long magicalAtkDelta = newMagicalAtk - oldMagicalAtk;
+        if (physicalAtkDelta != 0) {
+            values[BasicAttribute.PhysicalAtk].AddTotal(physicalAtkDelta);
+        }
+        if (magicalAtkDelta != 0) {
+            values[BasicAttribute.MagicalAtk].AddTotal(magicalAtkDelta);
+        }
+
+        switch (type) {
+            case BasicAttribute.Strength:
+                values[BasicAttribute.PhysicalRes].AddTotal(points);
+                break;
+            case BasicAttribute.Dexterity:
+                values[BasicAttribute.PhysicalRes].AddTotal(points);
+                values[BasicAttribute.Accuracy].AddTotal(points);
+                break;
+            case BasicAttribute.Intelligence:
+                values[BasicAttribute.MagicalRes].AddTotal(points);
+                break;
+            case BasicAttribute.Luck:
+                values[BasicAttribute.CriticalRate].AddTotal(points);
+                break;
+        }
+
         if (send) {
-            session.Send(StatsPacket.Update(session.Player, type));
+            session.Send(StatsPacket.Update(session.Player,
+                BasicAttribute.Strength,
+                BasicAttribute.Dexterity,
+                BasicAttribute.Intelligence,
+                BasicAttribute.Luck,
+                BasicAttribute.Health,
+                BasicAttribute.CriticalRate,
+                BasicAttribute.PhysicalAtk,
+                BasicAttribute.MagicalAtk,
+                BasicAttribute.PhysicalRes,
+                BasicAttribute.MagicalRes,
+                BasicAttribute.Accuracy));
         }
     }
     #endregion

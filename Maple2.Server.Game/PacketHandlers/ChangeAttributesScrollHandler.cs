@@ -216,14 +216,20 @@ public class ChangeAttributesScrollHandler : FieldPacketHandler {
 
     private ChangeAttributesScrollError IsCompatibleScroll(Item item, Item scroll, out ItemRemakeScrollMetadata? metadata) {
         metadata = null;
-        if (item.Rarity is < Constant.ChangeAttributesMinRarity or > Constant.ChangeAttributesMaxRarity) {
-            return ChangeAttributesScrollError.s_itemremake_scroll_error_impossible_rank;
+        if (item.Type.IsPet) {
+            if (item.Rarity is < 1 or > Constant.ChangeAttributesMaxRarity) {
+                return ChangeAttributesScrollError.s_itemremake_scroll_error_impossible_rank;
+            }
+        } else {
+            if (item.Rarity is < Constant.ChangeAttributesMinRarity or > Constant.ChangeAttributesMaxRarity) {
+                return ChangeAttributesScrollError.s_itemremake_scroll_error_impossible_rank;
+            }
+            if (item.Metadata.Limit.Level < Constant.ChangeAttributesMinLevel) {
+                return ChangeAttributesScrollError.s_itemremake_scroll_error_impossible_level;
+            }
         }
         if (!item.Type.IsWeapon && item.Type is { IsArmor: false, IsAccessory: false, IsPet: false }) {
             return ChangeAttributesScrollError.s_itemremake_scroll_error_impossible_slot;
-        }
-        if (item.Metadata.Limit.Level < Constant.ChangeAttributesMinLevel) {
-            return ChangeAttributesScrollError.s_itemremake_scroll_error_impossible_level;
         }
 
         // Validate scroll conditions
