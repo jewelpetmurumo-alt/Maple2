@@ -110,6 +110,9 @@ public sealed partial class GameSession : Core.Network.Session {
     public RideManager Ride { get; set; } = null!;
     public MentoringManager Mentoring { get; set; } = null!;
 
+    // Runtime-only: currently edited smart-computer furniture cube in housing.
+    public long EditingSmartComputerCubeId { get; set; }
+
     public GameSession(TcpClient tcpClient, GameServer server, IComponentContext context) : base(tcpClient) {
         this.server = server;
         State = SessionState.ChangeMap;

@@ -16,6 +16,7 @@ using Maple2.Server.Game.Manager.Items;
 using Maple2.Server.Game.Model;
 using Maple2.Server.Game.Packets;
 using Maple2.Server.Game.Session;
+using Maple2.Server.Game.Util;
 using Serilog;
 
 namespace Maple2.Server.Game.Manager;
@@ -373,7 +374,7 @@ public class HousingManager {
                 continue;
             }
 
-            session.FunctionCubeMetadata.TryGet(itemMetadata.Install.ObjectCubeId, out FunctionCubeMetadata? functionCubeMetadata);
+            FunctionCubeMetadata? functionCubeMetadata = HousingFunctionFurnitureRegistry.Resolve(itemMetadata, session.FunctionCubeMetadata);
             PlotCube? plotCube = CreateCube(Home.Indoor, itemMetadata, functionCubeMetadata, null, template.BaseCubePosition + cube.OffsetPosition, cube.Rotation);
             if (plotCube is null) {
                 logger.Error("Failed to create cube {cubeId} at position {position}.", cube.ItemId, template.BaseCubePosition + cube.OffsetPosition);
@@ -582,7 +583,7 @@ public class HousingManager {
             return false;
         }
 
-        session.FunctionCubeMetadata.TryGet(itemMetadata.Install.ObjectCubeId, out FunctionCubeMetadata? functionCubeMetadata);
+        FunctionCubeMetadata? functionCubeMetadata = HousingFunctionFurnitureRegistry.Resolve(itemMetadata, session.FunctionCubeMetadata);
 
         bool isSolidCube = itemMetadata.Install!.IsSolidCube;
         bool isOnGround = Math.Abs(position.Z - groundHeight) < 0.1;
@@ -718,6 +719,9 @@ public class HousingManager {
         }
 
         if (cube.Interact is not null) {
+            if (session.Field is not null) {
+                HousingFunctionFurnitureRegistry.Cleanup(session.Field, cube);
+            }
             session.Field?.RemoveFieldFunctionInteract(cube.Interact.Id);
         }
 

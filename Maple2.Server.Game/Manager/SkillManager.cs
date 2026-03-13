@@ -43,6 +43,8 @@ public class SkillManager {
     public void UpdatePassiveBuffs(bool notifyField = true, bool refreshStats = true) {
         RemovePassiveBuffs();
 
+        long fieldTick = session.Player.Field?.FieldTick ?? session.Field?.FieldTick ?? 0;
+
         // Add job passive skills to Player.
         foreach (SkillInfo.Skill skill in session.Config.Skill.SkillInfo.GetSkills(SkillType.Passive, SkillRank.Both)) {
             if (skill.Level <= 0) {
@@ -56,15 +58,15 @@ public class SkillManager {
 
             logger.Information("Applying passive skill {Name}: {SkillId},{Level}", metadata.Name, metadata.Id, metadata.Level);
             foreach (SkillEffectMetadata effect in metadata.Data.Skills) {
-                if (effect.Condition == null) {
+                if (!CanApplyPassiveEffect(effect)) {
                     continue;
                 }
 
-                if (effect.Condition.Target is not (SkillTargetType.Owner or SkillTargetType.Caster or SkillTargetType.PetOwner or SkillTargetType.None)) {
-                    continue;
-                }
+                session.Player.ApplyEffect(session.Player, session.Player, effect, fieldTick, EventConditionType.Activate, skillId: metadata.Id, notifyField: notifyField);
+            }
 
-                session.Player.ApplyEffect(session.Player, session.Player, effect, session.Player.Field.FieldTick, EventConditionType.Activate, skillId: metadata.Id, notifyField: notifyField);
+            foreach (SkillMetadataChange.Effect changeEffect in metadata.Data.Change?.Effects ?? Array.Empty<SkillMetadataChange.Effect>()) {
+                session.Player.Buffs.AddBuff(session.Player, session.Player, changeEffect.Id, (short) changeEffect.Level, fieldTick, changeEffect.OverlapCount, notifyField: notifyField);
             }
         }
 
@@ -90,11 +92,23 @@ public class SkillManager {
                     passiveBuffIds.Add(effectSkill.Id);
                 }
             }
+
+            foreach (SkillMetadataChange.Effect changeEffect in metadata.Data.Change?.Effects ?? Array.Empty<SkillMetadataChange.Effect>()) {
+                passiveBuffIds.Add(changeEffect.Id);
+            }
         }
 
         foreach (int buffId in passiveBuffIds) {
             session.Player.Buffs.Remove(buffId, session.Player.ObjectId);
         }
+    }
+
+    private static bool CanApplyPassiveEffect(SkillEffectMetadata effect) {
+        if (effect.Condition == null) {
+            return false;
+        }
+
+        return effect.Condition.Target is SkillTargetType.Owner or SkillTargetType.Caster or SkillTargetType.PetOwner or SkillTargetType.None;
     }
 
     #region SkillBook

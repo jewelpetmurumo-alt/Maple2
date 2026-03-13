@@ -169,6 +169,7 @@ public sealed class PetManager : IDisposable {
         session.Field?.RemovePet(pet.ObjectId);
         session.Field?.Broadcast(PetPacket.UnSummon(pet));
         session.Pet = null;
+        session.Stats.Refresh();
     }
 
     #region Internal (No Locks)

@@ -4,6 +4,7 @@ using Maple2.Model.Game;
 using Maple2.Model.Metadata;
 using Maple2.Server.Game.Model;
 using Maple2.Server.Game.Model.Skill;
+using Maple2.Server.Game.Manager.Field;
 using Maple2.Server.Game.Packets;
 using Maple2.Server.Game.Util;
 using Maple2.Server.World.Service;
@@ -432,7 +433,11 @@ public class BuffManager : IUpdatable {
         foreach (MapEntranceBuff buff in Actor.Field.Metadata.EntranceBuffs) {
             buffsToRemove.Add((buff.Id, Actor.ObjectId));
         }
+        bool leavingHome = Actor.Field is HomeFieldManager;
         foreach (Buff buff in EnumerateBuffs().Where(b => b.Metadata.Property.RemoveOnLeaveField)) {
+            if (leavingHome && HousingFunctionFurnitureRegistry.IsHousingCharmBuff(buff.Id)) {
+                continue;
+            }
             buffsToRemove.Add((buff.Id, Actor.ObjectId));
         }
         Remove(buffsToRemove.ToArray());

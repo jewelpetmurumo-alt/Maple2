@@ -934,6 +934,7 @@ public partial class FieldManager {
     }
 
     public FieldFunctionInteract? AddFieldFunctionInteract(PlotCube cube) {
+        HousingFunctionFurnitureRegistry.EnsureInteract(cube, FunctionCubeMetadata);
         if (cube.Interact == null) {
             return null;
         }
@@ -945,6 +946,7 @@ public partial class FieldManager {
         fieldFunctionInteracts[cube.Interact.Id] = fieldInteract;
 
         Broadcast(FunctionCubePacket.AddFunctionCube(cube.Interact));
+        HousingFunctionFurnitureRegistry.Materialize(this, cube);
 
         return fieldInteract;
     }
@@ -1109,7 +1111,7 @@ public partial class FieldManager {
 
         foreach (Plot plot in Plots.Values) {
             foreach (PlotCube plotCube in plot.Cubes.Values) {
-                if (plotCube.Interact?.NoticeSettings is not null) {
+                if (plotCube.Interact?.NoticeSettings is not null && !HousingFunctionFurnitureRegistry.IsSmartComputer(plotCube)) {
                     added.Session.Send(HomeActionPacket.SendCubeNoticeSettings(plotCube));
                 }
             }

@@ -176,9 +176,11 @@ public static class TriggerPacket {
         return pWriter;
     }
 
-    public static ByteWriter Unknown24() {
+    public static ByteWriter Unknown24(int cubeCoordKey, int unknown = 0) {
         var pWriter = Packet.Of(SendOp.Trigger);
         pWriter.Write<Command>(Command.Unknown24);
+        pWriter.WriteInt(cubeCoordKey);
+        pWriter.WriteInt(unknown);
 
         return pWriter;
     }

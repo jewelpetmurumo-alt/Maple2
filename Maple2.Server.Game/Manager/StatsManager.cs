@@ -214,10 +214,39 @@ public class StatsManager {
             Values.GearScore += totalGearScore;
         }
 
+        AddSummonedPetStats(player);
+
         Log.Logger.Debug("Final Gearscore for {name} ({id}): {gearscore}", player.Value.Character.Name, player.Value.Character.Id, Values.GearScore);
         player.Session.Dungeon.UpdateDungeonEnterLimit();
         player.Session.ConditionUpdate(ConditionType.item_gear_score, counter: Values.GearScore);
     }
+
+    private static readonly HashSet<BasicAttribute> AdditiveBuffBasicRates = [
+        BasicAttribute.Piercing,
+    ];
+
+    private static readonly HashSet<SpecialAttribute> AdditiveBuffSpecialStats = [
+        SpecialAttribute.TotalDamage,
+        SpecialAttribute.NormalNpcDamage,
+        SpecialAttribute.LeaderNpcDamage,
+        SpecialAttribute.EliteNpcDamage,
+        SpecialAttribute.BossNpcDamage,
+        SpecialAttribute.FireDamage,
+        SpecialAttribute.IceDamage,
+        SpecialAttribute.ElectricDamage,
+        SpecialAttribute.HolyDamage,
+        SpecialAttribute.DarkDamage,
+        SpecialAttribute.PoisonDamage,
+        SpecialAttribute.MeleeDamage,
+        SpecialAttribute.RangedDamage,
+        SpecialAttribute.PhysicalPiercing,
+        SpecialAttribute.MagicalPiercing,
+        SpecialAttribute.OffensivePhysicalDamage,
+        SpecialAttribute.OffensiveMagicalDamage,
+        SpecialAttribute.PvpDamage,
+        SpecialAttribute.DarkStreamDamage,
+        SpecialAttribute.ChaosRaidAttack,
+    ];
 
     private void AddBuffs(FieldPlayer player) {
         foreach (Buff buff in player.Buffs.EnumerateBuffs()) {
@@ -225,14 +254,26 @@ public class StatsManager {
                 Values[valueBasicAttribute].AddTotal(value);
             }
             foreach ((BasicAttribute rateBasicAttribute, float rate) in buff.Metadata.Status.Rates) {
-                // ensure regen intervals do not drop below 0.1
-                Values[rateBasicAttribute].AddRate(rate);
+                if (AdditiveBuffBasicRates.Contains(rateBasicAttribute)) {
+                    Values[rateBasicAttribute].AddScaledTotal(rate);
+                } else {
+                    // ensure regen intervals do not drop below 0.1
+                    Values[rateBasicAttribute].AddRate(rate);
+                }
             }
             foreach ((SpecialAttribute valueSpecialAttribute, float value) in buff.Metadata.Status.SpecialValues) {
-                Values[valueSpecialAttribute].AddTotal((long) value);
+                if (AdditiveBuffSpecialStats.Contains(valueSpecialAttribute)) {
+                    Values[valueSpecialAttribute].AddScaledTotal(value);
+                } else {
+                    Values[valueSpecialAttribute].AddTotal((long) Math.Round(value));
+                }
             }
             foreach ((SpecialAttribute rateSpecialAttribute, float rate) in buff.Metadata.Status.SpecialRates) {
-                Values[rateSpecialAttribute].AddRate(rate);
+                if (AdditiveBuffSpecialStats.Contains(rateSpecialAttribute)) {
+                    Values[rateSpecialAttribute].AddScaledTotal(rate);
+                } else {
+                    Values[rateSpecialAttribute].AddRate(rate);
+                }
             }
         }
     }
@@ -245,6 +286,15 @@ public class StatsManager {
                 Values[buff.Metadata.Status.Conversion.ResultAttribute].AddTotal((long) sum);
             }
         }
+    }
+
+    private void AddSummonedPetStats(FieldPlayer player) {
+        Item? summonedPet = player.Session.Pet?.Pet;
+        if (summonedPet?.Stats == null) {
+            return;
+        }
+
+        AddItemStats(summonedPet.Stats);
     }
 
     private void AddItemStats(ItemStats stats) {

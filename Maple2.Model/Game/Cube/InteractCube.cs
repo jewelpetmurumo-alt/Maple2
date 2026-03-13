@@ -18,6 +18,8 @@ public class InteractCube : IByteSerializable {
     public CubeNoticeSettings? NoticeSettings { get; set; }
 
     public long InteractingCharacterId { get; set; }
+    // Runtime-only helper used by housing function furniture that materializes NPCs.
+    public int SpawnedNpcObjectId { get; set; }
 
     public InteractCube(Vector3B position, FunctionCubeMetadata metadata) {
         Id = $"4_{position.ConvertToInt()}";

@@ -94,8 +94,10 @@ public static class DamageCalculator {
 
         double damageMultiplier = damageBonus * (1 + invokeRate) * (property.Rate + invokeValue);
 
-        double defensePierce = 1 - Math.Min(0.3, (1 / (1 + target.Buffs.GetResistance(BasicAttribute.Piercing)) * (caster.Stats.Values[BasicAttribute.Piercing].Multiplier() - 1)));
-        damageMultiplier *= 1 / (Math.Max(target.Stats.Values[BasicAttribute.Defense].Total, 1) * defensePierce);
+        double defensePierceRate = caster.Stats.Values[BasicAttribute.Piercing].Multiplier();
+        defensePierceRate *= 1 / (1 + target.Buffs.GetResistance(BasicAttribute.Piercing));
+        double defenseFactor = 1 - Math.Min(0.3, Math.Max(0d, defensePierceRate));
+        damageMultiplier *= 1 / (Math.Max(target.Stats.Values[BasicAttribute.Defense].Total, 1) * defenseFactor);
 
         // Check resistances
         double attackTypeAmount = 0;
@@ -137,7 +139,8 @@ public static class DamageCalculator {
             attackTypeAmount = Math.Max(attackTypeAmount, GetOwnedPetAttackFactor(ownedPetCaster));
         }
 
-        damageMultiplier *= attackTypeAmount * resistance * (finalDamage == 0 ? 1 : finalDamage);
+        double finalDamageFactor = 1 + Math.Max(0d, finalDamage);
+        damageMultiplier *= attackTypeAmount * resistance * finalDamageFactor;
         attackDamage *= damageMultiplier * Constant.AttackDamageFactor + property.Value;
 
         // Apply any shields

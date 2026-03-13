@@ -443,6 +443,7 @@ public class PetHandler : FieldPacketHandler {
             session.Field.Broadcast(ProxyObjectPacket.AddPet(fieldPet));
             session.Pet = new PetManager(session, fieldPet);
             session.Pet.Load();
+            session.Stats.Refresh();
         }
     }
 }

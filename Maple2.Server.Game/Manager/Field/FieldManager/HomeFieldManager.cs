@@ -35,7 +35,6 @@ public class HomeFieldManager : FieldManager {
                 .ForEach(cubePortal => SpawnCubePortal(cubePortal));
 
             plot.Cubes.Values
-                .Where(plotCube => plotCube.Interact != null)
                 .ToList()
                 .ForEach(plotCube => AddFieldFunctionInteract(plotCube));
         }

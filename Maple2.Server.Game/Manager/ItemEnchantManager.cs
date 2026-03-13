@@ -459,9 +459,9 @@ public class ItemEnchantManager {
         }
         foreach ((SpecialAttribute attribute, int value) in optionMetadata.SpecialValues) {
             if (limitBreakItemUpgrade.LimitBreak.SpecialOptions.TryGetValue(attribute, out SpecialOption existing)) {
-                limitBreakItemUpgrade.LimitBreak.SpecialOptions[attribute] = existing + new SpecialOption(value);
+                limitBreakItemUpgrade.LimitBreak.SpecialOptions[attribute] = existing + new SpecialOption(0, value);
             } else {
-                limitBreakItemUpgrade.LimitBreak.SpecialOptions[attribute] = new SpecialOption(value);
+                limitBreakItemUpgrade.LimitBreak.SpecialOptions[attribute] = new SpecialOption(0, value);
             }
         }
         foreach ((SpecialAttribute attribute, float rate) in optionMetadata.SpecialRates) {

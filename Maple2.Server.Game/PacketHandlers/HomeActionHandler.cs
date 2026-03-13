@@ -10,6 +10,7 @@ using Maple2.Server.Game.Manager.Field;
 using Maple2.Server.Game.Model;
 using Maple2.Server.Game.Packets;
 using Maple2.Server.Game.Session;
+using Maple2.Server.Game.Util;
 
 namespace Maple2.Server.Game.PacketHandlers;
 
@@ -183,7 +184,13 @@ public class HomeActionHandler : FieldPacketHandler {
         cube.Interact.NoticeSettings.Notice = packet.ReadUnicodeString();
         cube.Interact.NoticeSettings.Distance = packet.ReadByte();
 
-        session.Field?.Broadcast(HomeActionPacket.SendCubeNoticeSettings(cube, editing: false));
+        if (HousingFunctionFurnitureRegistry.IsSmartComputer(cube)) {
+            string result = HousingFunctionFurnitureRegistry.ApplyComputerScript(session, cube);
+            session.Send(HomeActionPacket.HostAlarm(result));
+        } else {
+            session.Field?.Broadcast(HomeActionPacket.SendCubeNoticeSettings(cube, editing: false));
+        }
+
         session.Housing.SaveHome();
     }
 
@@ -197,6 +204,13 @@ public class HomeActionHandler : FieldPacketHandler {
 
         if (!plot.Cubes.TryGetValue(coord, out PlotCube? cube)) {
             Logger.Warning("Cube not found at {0}", coord);
+            return;
+        }
+
+        if (HousingFunctionFurnitureRegistry.IsSmartComputer(cube)) {
+            if (!HousingFunctionFurnitureRegistry.OpenSmartComputerEditor(session, cube)) {
+                Logger.Warning("Failed to open smart computer editor at {0}", coord);
+            }
             return;
         }
 

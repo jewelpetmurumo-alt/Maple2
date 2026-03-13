@@ -120,8 +120,12 @@ public class Stats {
         }
 
         foreach (Stat stat in specialValues.Values) {
-            long rateBonus = (long) (stat.Rate * (stat.Base + (stat.Total - stat.Base)));
-            stat.AddTotal(rateBonus);
+            // Special attributes such as Boss Damage / Element Damage / Piercing are stored as
+            // additive thousandths in Total rather than multiplicative Rate-based stats.
+            if (stat.Rate != 0) {
+                long rateBonus = (long) (stat.Rate * (stat.Base + (stat.Total - stat.Base)));
+                stat.AddTotal(rateBonus);
+            }
         }
     }
 
@@ -197,8 +201,19 @@ public sealed class Stat {
     }
 
     public void AddTotal(SpecialOption option) {
-        AddTotal((int) option.Value);
-        Rate += option.Rate;
+        if (option.Value != 0) {
+            AddTotal((long) Math.Round(option.Value));
+        }
+        if (option.Rate != 0) {
+            AddTotal((long) Math.Round(option.Rate * 1000f));
+        }
+    }
+
+    public void AddScaledTotal(float amount) {
+        if (amount == 0) {
+            return;
+        }
+        AddTotal((long) Math.Round(amount * 1000f));
     }
 
     public void AddRate(float rate) {

@@ -139,7 +139,6 @@ public partial class FieldManager : IField {
                 Plots[plot.Number] = plot;
 
                 plot.Cubes.Values
-                    .Where(plotCube => plotCube.Interact != null)
                     .ToList()
                     .ForEach(plotCube => AddFieldFunctionInteract(plotCube));
 

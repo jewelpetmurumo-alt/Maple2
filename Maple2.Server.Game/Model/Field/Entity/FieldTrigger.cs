@@ -28,6 +28,13 @@ public class FieldTrigger : FieldEntity<TriggerModel> {
         nextTick = field.FieldTick;
     }
 
+    public FieldTrigger(FieldManager field, int objectId, TriggerModel value, Trigger.Helpers.Trigger parsedTrigger) : base(field, objectId, value) {
+        Context = new TriggerContext(this);
+        trigger = parsedTrigger;
+        nextState = new TriggerState(trigger, Context);
+        nextTick = field.FieldTick;
+    }
+
     public List<TriggerState> GetStates(string[] names) {
         if (names.Length == 0) {
             throw new ArgumentException("At least one state name must be provided.");

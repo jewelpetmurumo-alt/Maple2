@@ -54,7 +54,17 @@ public class TriggerCache : LRUCache<(string, string), Trigger.Helpers.Trigger> 
         return false;
     }
 
+    public static Trigger.Helpers.Trigger ParseXml(string xBlock, string triggerName, string xml) {
+        var document = new XmlDocument();
+        document.LoadXml(xml);
+        return ParseTriggerDocument(xBlock, triggerName, document);
+    }
+
     private Trigger.Helpers.Trigger ParseTrigger(string xBlock, string triggerName, XmlDocument doc) {
+        return ParseTriggerDocument(xBlock, triggerName, doc);
+    }
+
+    private static Trigger.Helpers.Trigger ParseTriggerDocument(string xBlock, string triggerName, XmlDocument doc) {
         XmlElement? root = doc.DocumentElement;
         if (root is null || root.Name != "ms2") {
             throw new ArgumentException("Trigger XML must have a root element named <ms2>.");
@@ -142,7 +152,7 @@ public class TriggerCache : LRUCache<(string, string), Trigger.Helpers.Trigger> 
         return new Trigger.Helpers.Trigger(states);
     }
 
-    private LinkedList<IAction> ParseActions(XmlNode parentNode, string stateName, string triggerName, string xBlock, string context) {
+    private static LinkedList<IAction> ParseActions(XmlNode parentNode, string stateName, string triggerName, string xBlock, string context) {
         LinkedList<IAction> actions = [];
         foreach (XmlNode actionNode in parentNode.SelectNodes("action")!) {
             string? actionName = actionNode.Attributes?["name"]?.Value;

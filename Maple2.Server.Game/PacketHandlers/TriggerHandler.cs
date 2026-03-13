@@ -1,4 +1,6 @@
-﻿using Maple2.Model.Enum;
+﻿using Maple2.Model.Common;
+using Maple2.Model.Enum;
+using Maple2.Model.Game;
 using Maple2.PacketLib.Tools;
 using Maple2.Server.Core.Constants;
 using Maple2.Server.Game.PacketHandlers.Field;
@@ -6,6 +8,7 @@ using Maple2.Server.Game.Model;
 using Maple2.Server.Game.Model.Widget;
 using Maple2.Server.Game.Packets;
 using Maple2.Server.Game.Session;
+using Maple2.Server.Game.Util;
 
 namespace Maple2.Server.Game.PacketHandlers;
 
@@ -95,15 +98,53 @@ public class TriggerHandler : FieldPacketHandler {
     }
 
     private void HandleLoadScript(GameSession session, IByteReader packet) {
-        int cubeId = packet.ReadInt();
+        int cubeCoordKey = packet.ReadInt();
+        Logger.Information("TriggerTool requested script load for cubeCoordKey={CubeCoordKey}", cubeCoordKey);
+        TryBindEditingSmartComputer(session, cubeCoordKey);
+        session.Send(TriggerPacket.EditScript(HousingFunctionFurnitureRegistry.GetSmartComputerScript(session)));
     }
 
     private void HandleSaveScript(GameSession session, IByteReader packet) {
-        int cubeId = packet.ReadInt();
+        int cubeCoordKey = packet.ReadInt();
+        Logger.Information("TriggerTool requested script save for cubeCoordKey={CubeCoordKey}", cubeCoordKey);
+        TryBindEditingSmartComputer(session, cubeCoordKey);
         string xml = packet.ReadString();
+        HousingFunctionFurnitureRegistry.TrySaveSmartComputerScript(session, xml, out string message);
+        session.Send(HomeActionPacket.HostAlarm(message));
     }
 
     private void HandleDiscardScript(GameSession session, IByteReader packet) {
-        int cubeId = packet.ReadInt();
+        int cubeCoordKey = packet.ReadInt();
+        TryBindEditingSmartComputer(session, cubeCoordKey);
+        session.EditingSmartComputerCubeId = 0;
+        session.Send(TriggerPacket.ResetScript());
+    }
+
+    private static void TryBindEditingSmartComputer(GameSession session, int cubeCoordKey) {
+        if (session.EditingSmartComputerCubeId != 0) {
+            return;
+        }
+
+        Plot? plot = session.Housing.GetFieldPlot();
+        if (plot is null) {
+            return;
+        }
+
+        Vector3B coord;
+        try {
+            coord = Vector3B.ConvertFromInt(cubeCoordKey);
+        } catch {
+            return;
+        }
+
+        if (!plot.Cubes.TryGetValue(coord, out PlotCube? cube)) {
+            return;
+        }
+
+        if (!HousingFunctionFurnitureRegistry.IsSmartComputer(cube)) {
+            return;
+        }
+
+        session.EditingSmartComputerCubeId = cube.Id;
     }
 }

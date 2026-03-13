@@ -5,11 +5,13 @@ using Maple2.Model.Game;
 using Maple2.Model.Metadata;
 using Maple2.Model.Metadata.FieldEntity;
 using Maple2.Server.Game.Manager;
+using Maple2.Server.Game.Manager.Field;
 using Maple2.Server.Game.Model.Skill;
 using Maple2.Server.Game.Packets;
 using Maple2.Server.Game.Session;
 using Maple2.Tools.Collision;
 using Maple2.Tools.Scheduler;
+using Maple2.Server.Game.Util;
 
 namespace Maple2.Server.Game.Model;
 
@@ -343,6 +345,14 @@ public class FieldPlayer : Actor<Player> {
                 }
                 break;
                 // TODO: Any more condition states?
+        }
+
+        if (Field is HomeFieldManager) {
+            foreach (Plot plot in Field.Plots.Values) {
+                foreach (PlotCube cube in plot.Cubes.Values) {
+                    HousingFunctionFurnitureRegistry.TryTriggerTrap(Session, cube);
+                }
+            }
         }
 
         Field.EnsurePlayerPosition(this);

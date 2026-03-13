@@ -146,6 +146,8 @@ public class EquipManager {
             if (item.Template != null) {
                 session.ConditionUpdate(ConditionType.change_ugc_equip);
             }
+
+            session.Config.Skill.UpdatePassiveBuffs(refreshStats: false);
             session.Stats.Refresh();
             return true;
         }
@@ -162,6 +164,7 @@ public class EquipManager {
             foreach ((EquipSlot slot, Item item) in Gear) {
                 if (itemUid == item.Uid) {
                     if (UnequipInternal(slot, false)) {
+                        session.Config.Skill.UpdatePassiveBuffs(refreshStats: false);
                         session.Stats.Refresh();
                         return true;
                     }
@@ -172,6 +175,7 @@ public class EquipManager {
             foreach ((EquipSlot slot, Item item) in Outfit) {
                 if (itemUid == item.Uid) {
                     if (UnequipInternal(slot, true)) {
+                        session.Config.Skill.UpdatePassiveBuffs(refreshStats: false);
                         session.Stats.Refresh();
                         return true;
                     }

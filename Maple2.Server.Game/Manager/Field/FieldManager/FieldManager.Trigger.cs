@@ -32,6 +32,20 @@ public partial class FieldManager {
         }
     }
 
+    public FieldTrigger? AddTrigger(TriggerModel trigger, Trigger.Helpers.Trigger parsedTrigger) {
+        try {
+            var fieldTrigger = new FieldTrigger(this, NextLocalId(), trigger, parsedTrigger) {
+                Position = trigger.Position,
+                Rotation = trigger.Rotation,
+            };
+            fieldTriggers[trigger.Name] = fieldTrigger;
+            return fieldTrigger;
+        } catch (ArgumentException ex) {
+            logger.Warning(ex, "Invalid Trigger: {Exception}", ex.Message);
+            return null;
+        }
+    }
+
     public ICollection<FieldTrigger> EnumerateTrigger() => fieldTriggers.Values;
 
     public bool TryGetTrigger(string name, [NotNullWhen(true)] out FieldTrigger? fieldTrigger) {

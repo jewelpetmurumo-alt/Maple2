@@ -4,6 +4,7 @@ using Maple2.Model.Common;
 using Maple2.Model.Game;
 using Maple2.Server.Game.Manager.Field;
 using Maple2.Server.Game.Packets;
+using Maple2.Server.Game.Util;
 using Maple2.Server.Game.Session;
 
 namespace Maple2.Server.Game.Service;
@@ -100,6 +101,7 @@ public partial class ChannelService {
 
                 if (isReplace && plot.Cubes.Remove(plotCube.Position, out PlotCube? cube)) {
                     if (cube.Interact is not null) {
+                        HousingFunctionFurnitureRegistry.Cleanup(fieldManager, cube);
                         fieldManager.RemoveFieldFunctionInteract(cube.Interact.Id);
                     }
                 }
@@ -107,9 +109,7 @@ public partial class ChannelService {
                 plotCube.PlotId = plot.Number;
 
                 plot.Cubes.Add(plotCube.Position, plotCube);
-                if (plotCube.Interact is not null) {
-                    fieldManager.AddFieldFunctionInteract(plotCube);
-                }
+                fieldManager.AddFieldFunctionInteract(plotCube);
                 if (isReplace) {
                     fieldManager.Broadcast(CubePacket.ReplaceCube(fieldManager.FieldActor.ObjectId, plotCube));
                 } else {
@@ -127,6 +127,7 @@ public partial class ChannelService {
                     return;
                 }
                 if (cubeToRemove.Interact is not null) {
+                    HousingFunctionFurnitureRegistry.Cleanup(fieldManager, cubeToRemove);
                     fieldManager.RemoveFieldFunctionInteract(cubeToRemove.Interact.Id);
                 }
                 fieldManager.Broadcast(CubePacket.RemoveCube(fieldManager.FieldActor.ObjectId, positionToRemove));
